@@ -1,4 +1,4 @@
-package com.AbdulPalto.medtrack;
+package com.AbdulPaito.medtrack;
 
 import android.os.Bundle;
 import android.widget.Button;
@@ -8,8 +8,8 @@ import android.widget.RadioGroup;
 import android.widget.TimePicker;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import com.AbdulPalto.medtrack.database.DatabaseHelper;
-import com.AbdulPalto.medtrack.database.Medicine;
+import com.AbdulPaito.medtrack.database.DatabaseHelper;
+import com.AbdulPaito.medtrack.database.Medicine;
 
 public class AddMedicineActivity extends AppCompatActivity {
 

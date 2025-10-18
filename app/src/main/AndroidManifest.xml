@@ -34,6 +34,11 @@
             android:name=".AddMedicineActivity"
             android:exported="false" />
 
+
+        <activity
+            android:name=".ReminderListActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

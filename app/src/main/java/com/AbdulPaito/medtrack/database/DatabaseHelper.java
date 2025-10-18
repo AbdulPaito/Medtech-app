@@ -1,4 +1,4 @@
-package com.AbdulPalto.medtrack.database;
+package com.AbdulPaito.medtrack.database;
 
 import android.content.ContentValues;
 import android.content.Context;
