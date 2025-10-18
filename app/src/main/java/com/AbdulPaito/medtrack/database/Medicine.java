@@ -1,4 +1,4 @@
-package com.AbdulPalto.medtrack.database;
+package com.AbdulPaito.medtrack.database;
 
 /**
  * Medicine - Represents a single medicine entry

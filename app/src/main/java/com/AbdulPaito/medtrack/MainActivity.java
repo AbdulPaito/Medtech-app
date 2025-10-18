@@ -1,4 +1,4 @@
-package com.AbdulPalto.medtrack;
+package com.AbdulPaito.medtrack;
 
 import android.os.Bundle;
 import android.content.Intent;
@@ -28,9 +28,9 @@ public class MainActivity extends AppCompatActivity {
         });
 
         viewRemindersCard.setOnClickListener(view -> {
-            Toast.makeText(this, "View Reminders - Coming soon!", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, ReminderListActivity.class);
+            startActivity(intent);
         });
-
         historyCard.setOnClickListener(view -> {
             Toast.makeText(this, "History - Coming soon!", Toast.LENGTH_SHORT).show();
         });
