@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">MedTrack</string>
+    <string name="add_medicine">Add Medicine</string>
+    <string name="view_reminders">View Reminders</string>
+    <string name="history">History</string>
+    <string name="settings">Settings</string>
+</resources>
