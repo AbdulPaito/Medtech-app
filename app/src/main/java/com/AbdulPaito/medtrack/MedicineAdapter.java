@@ -51,7 +51,7 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.Medici
 
         holder.textMedicineName.setText(medicine.getMedicineName());
         holder.textDosage.setText(medicine.getDosage());
-        holder.textTime.setText("⏰ " + medicine.getReminderTime());
+        holder.textTime.setText("⏰ " + formatTime(medicine.getReminderTime()));
 
         // Show instructions if available
         if (medicine.getInstructions() != null && !medicine.getInstructions().isEmpty()) {
@@ -79,6 +79,25 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.Medici
     @Override
     public int getItemCount() {
         return medicineList.size();
+    }
+
+    /**
+     * Format time to 12-hour with AM/PM
+     */
+    private String formatTime(String time24) {
+        try {
+            String[] parts = time24.split(":");
+            int hour = Integer.parseInt(parts[0]);
+            int minute = Integer.parseInt(parts[1]);
+
+            String amPm = hour >= 12 ? "PM" : "AM";
+            int displayHour = hour % 12;
+            if (displayHour == 0) displayHour = 12;
+
+            return String.format("%d:%02d %s", displayHour, minute, amPm);
+        } catch (Exception e) {
+            return time24; // Return original if parsing fails
+        }
     }
 
     /**

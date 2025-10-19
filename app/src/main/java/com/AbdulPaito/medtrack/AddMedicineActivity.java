@@ -46,7 +46,7 @@ public class AddMedicineActivity extends AppCompatActivity {
         btnSave = findViewById(R.id.btn_save);
         btnCancel = findViewById(R.id.btn_cancel);
 
-        timePicker.setIs24HourView(true);
+        timePicker.setIs24HourView(false);  // 12-hour format with AM/PM
     }
 
     private void setupButtons() {
@@ -84,11 +84,29 @@ public class AddMedicineActivity extends AppCompatActivity {
         long id = databaseHelper.addMedicine(medicine);
 
         if (id > 0) {
-            Toast.makeText(this, "Medicine added successfully!", Toast.LENGTH_SHORT).show();
-            finish();
+            medicine.setId((int) id);
+
+            AlarmScheduler alarmScheduler = new AlarmScheduler(this);
+            alarmScheduler.scheduleMedicineAlarm(medicine);
+
+            // Format time with AM/PM for display
+            String displayTime = formatTime(hour, minute);
+            Toast.makeText(this, "Medicine added! Reminder set for " + displayTime,
+                    Toast.LENGTH_LONG).show();
+            finish();  // Close activity and return to home
         } else {
             Toast.makeText(this, "Error adding medicine", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    /**
+     * Format time to 12-hour with AM/PM
+     */
+    private String formatTime(int hour, int minute) {
+        String amPm = hour >= 12 ? "PM" : "AM";
+        int displayHour = hour % 12;
+        if (displayHour == 0) displayHour = 12;
+        return String.format("%d:%02d %s", displayHour, minute, amPm);
     }
 
     @Override
