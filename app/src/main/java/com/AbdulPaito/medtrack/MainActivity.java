@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView textMedicineCount;
     private TextView textNextReminder;
-    private TextView textWelcome; // 👈 Added
+    private TextView textWelcome;
     private DatabaseHelper databaseHelper;
 
     @Override
@@ -35,10 +35,10 @@ public class MainActivity extends AppCompatActivity {
         initViews();
         setupButtons();
         setupBottomNavigation();
-        setupWelcomeName(); // 👈 Added here
+        setupWelcomeName();
         updateStats();
 
-        // Request notification permission
+        // Request notification permission (Android 13+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -51,10 +51,10 @@ public class MainActivity extends AppCompatActivity {
     private void initViews() {
         textMedicineCount = findViewById(R.id.text_medicine_count);
         textNextReminder = findViewById(R.id.text_next_reminder);
-        textWelcome = findViewById(R.id.text_welcome); // 👈 make sure this ID exists in XML
+        textWelcome = findViewById(R.id.text_welcome);
     }
 
-    // 👇 This handles editable "Hello, User!"
+    // Editable "Hello, User!"
     private void setupWelcomeName() {
         SharedPreferences prefs = getSharedPreferences("MedTrackPrefs", MODE_PRIVATE);
         String username = prefs.getString("username", "User");
@@ -84,13 +84,11 @@ public class MainActivity extends AppCompatActivity {
         MaterialCardView viewRemindersCard = findViewById(R.id.card_view_reminders);
 
         addMedicineCard.setOnClickListener(view -> {
-            Intent intent = new Intent(this, AddMedicineActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, AddMedicineActivity.class));
         });
 
         viewRemindersCard.setOnClickListener(view -> {
-            Intent intent = new Intent(this, ReminderListActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, ReminderListActivity.class));
         });
     }
 
@@ -109,10 +107,11 @@ public class MainActivity extends AppCompatActivity {
             } else if (itemId == R.id.navigation_history) {
                 startActivity(new Intent(this, HistoryActivity.class));
                 return true;
-            } else if (itemId == R.id.navigation_settings) {
-                // TODO: Open Settings Activity
+            } else if (itemId == R.id.navigation_settings) {  // ✅ FIXED missing `}` here
+                startActivity(new Intent(this, SettingsActivity.class));
                 return true;
             }
+
             return false;
         });
     }

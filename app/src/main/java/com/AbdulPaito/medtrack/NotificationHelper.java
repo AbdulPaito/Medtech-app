@@ -1,5 +1,8 @@
 package com.AbdulPaito.medtrack;
 
+import android.media.AudioAttributes;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -37,8 +40,22 @@ public class NotificationHelper {
                     NotificationManager.IMPORTANCE_HIGH
             );
             channel.setDescription("Reminders to take your medicine");
+
+            // Enable vibration and lights
             channel.enableVibration(true);
             channel.enableLights(true);
+            channel.setVibrationPattern(new long[]{0, 1000, 500, 1000});
+
+            // Set alarm sound
+            Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+            if (alarmSound == null) {
+                alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            }
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ALARM)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build();
+            channel.setSound(alarmSound, audioAttributes);
 
             if (notificationManager != null) {
                 notificationManager.createNotificationChannel(channel);
@@ -61,16 +78,24 @@ public class NotificationHelper {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
+        // Use alarm sound (fallback to notification sound)
+        Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+        if (alarmSound == null) {
+            alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        }
+
         // Build notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_menu_agenda)
                 .setContentTitle("💊 Time to take your medicine!")
                 .setContentText(medicineName + " - " + dosage)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setCategory(NotificationCompat.CATEGORY_REMINDER)
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setAutoCancel(true)
+                .setSound(alarmSound)
+                .setVibrate(new long[]{0, 1000, 500, 1000})
+                .setLights(0xFF00FF00, 500, 500)
                 .setContentIntent(pendingIntent)
-                .setVibrate(new long[]{0, 500, 200, 500})
                 .setStyle(new NotificationCompat.BigTextStyle()
                         .bigText("Don't forget to take " + medicineName + " (" + dosage + ")"))
                 .addAction(
