@@ -1,5 +1,7 @@
 package com.AbdulPaito.medtrack;
 
+import androidx.recyclerview.widget.ItemTouchHelper;
+import com.google.android.material.snackbar.Snackbar;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -19,7 +21,7 @@ public class ReminderListActivity extends AppCompatActivity {
     private MedicineAdapter adapter;
     private DatabaseHelper databaseHelper;
     private List<Medicine> medicineList;
-    private View emptyView;  // ← CHANGED from TextView to View
+    private View emptyView;  // Empty state view
     private FloatingActionButton fabAdd;
 
     @Override
@@ -62,6 +64,57 @@ public class ReminderListActivity extends AppCompatActivity {
 
             adapter = new MedicineAdapter(medicineList, this::onMedicineClick, this::onDeleteClick);
             recyclerView.setAdapter(adapter);
+
+            // 👇 Swipe-to-delete with undo confirmation
+            ItemTouchHelper itemTouchHelper = new ItemTouchHelper(
+                    new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+
+                        @Override
+                        public boolean onMove(RecyclerView recyclerView,
+                                              RecyclerView.ViewHolder viewHolder,
+                                              RecyclerView.ViewHolder target) {
+                            return false; // no drag/drop
+                        }
+
+                        @Override
+                        public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                            int position = viewHolder.getAdapterPosition();
+                            Medicine deletedMedicine = medicineList.get(position);
+
+                            new AlertDialog.Builder(ReminderListActivity.this)
+                                    .setTitle("Delete Medicine")
+                                    .setMessage("Are you sure you want to delete " + deletedMedicine.getMedicineName() + "?")
+                                    .setPositiveButton("Delete", (dialog, which) -> {
+                                        // Delete from DB and remove from list
+                                        databaseHelper.deleteMedicine(deletedMedicine.getId());
+                                        medicineList.remove(position);
+                                        adapter.notifyItemRemoved(position);
+
+                                        // Show Snackbar with Undo option
+                                        Snackbar.make(recyclerView, deletedMedicine.getMedicineName() + " deleted", Snackbar.LENGTH_LONG)
+                                                .setAction("UNDO", v -> {
+                                                    // Reinsert medicine into DB and list
+                                                    databaseHelper.addMedicine(deletedMedicine);
+                                                    medicineList.add(position, deletedMedicine);
+                                                    adapter.notifyItemInserted(position);
+                                                })
+                                                .show();
+
+                                        // Show empty view if list becomes empty
+                                        if (medicineList.isEmpty()) {
+                                            recyclerView.setVisibility(View.GONE);
+                                            emptyView.setVisibility(View.VISIBLE);
+                                        }
+                                    })
+                                    .setNegativeButton("Cancel", (dialog, which) -> {
+                                        adapter.notifyItemChanged(position);
+                                        dialog.dismiss();
+                                    })
+                                    .show();
+                        }
+                    });
+
+            itemTouchHelper.attachToRecyclerView(recyclerView);
         }
     }
 

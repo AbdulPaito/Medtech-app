@@ -4,4 +4,12 @@
     <string name="view_reminders">View Reminders</string>
     <string name="history">History</string>
     <string name="settings">Settings</string>
+
+    <!-- Home Screen Strings -->
+    <string name="no_medicines_added">No medicines added yet</string>
+    <string name="add_first_medicine">Add your first medicine to get started!</string>
+    <string name="one_medicine_scheduled">1 medicine scheduled</string>
+    <string name="stay_healthy">Stay healthy! 💪</string>
+    <string name="medicines_scheduled">%d medicines scheduled</string>
+    <string name="taking_care_health">Taking care of your health! 🌟</string>
 </resources>

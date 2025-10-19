@@ -4,194 +4,205 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA">
+    android:background="#FFE4EC">
 
-    <!-- Welcome Header -->
-    <TextView
-        android:id="@+id/text_welcome"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="32dp"
-        android:text="Hello, User!"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="#212121"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <!-- App Subtitle -->
-    <TextView
-        android:id="@+id/text_subtitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="8dp"
-        android:text="MedTrack - Your Health Companion"
-        android:textSize="16sp"
-        android:textColor="#757575"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_welcome" />
-
-    <!-- Main Cards Container -->
-    <LinearLayout
+    <!-- Main Scrollable Content -->
+    <ScrollView
+        android:id="@+id/scroll_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:orientation="vertical"
-        android:padding="16dp"
-        android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@id/text_subtitle"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation">
 
-        <!-- Add Medicine Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_add_medicine"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_margin="8dp"
-            app:cardElevation="4dp"
-            app:cardCornerRadius="16dp"
-            app:cardBackgroundColor="#FFFFFF">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="💊"
-                    android:textSize="48sp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Add Medicine"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#5EC2D6"
-                    android:layout_marginTop="8dp" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- View Reminders Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_view_reminders"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_margin="8dp"
-            app:cardElevation="4dp"
-            app:cardCornerRadius="16dp"
-            app:cardBackgroundColor="#FFFFFF">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🔔"
-                    android:textSize="48sp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="View Reminders"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#5EC2D6"
-                    android:layout_marginTop="8dp" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Bottom Row: History and Settings -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
 
-            <!-- History Card -->
+            <!-- Welcome Header with Icon -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <!-- User Icon (Using emoji as icon) -->
+                <TextView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:text="👤"
+                    android:textSize="36sp"
+                    android:gravity="center"
+                    android:layout_marginEnd="12dp" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/text_welcome"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Hello, User!"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:textColor="#212121" />
+
+                    <TextView
+                        android:id="@+id/text_subtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="MedTrack - Your Health Companion"
+                        android:textSize="16sp"
+                        android:textColor="#555555" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Quick Stats Card -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_history"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:layout_margin="8dp"
-                app:cardElevation="4dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                app:cardElevation="6dp"
                 app:cardCornerRadius="16dp"
-                app:cardBackgroundColor="#FFFFFF">
+                app:cardBackgroundColor="#FF9ACD">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="16dp">
+                    android:padding="20dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="📊"
-                        android:textSize="40sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="History"
-                        android:textSize="16sp"
+                        android:text="📊 Today's Summary"
+                        android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="#5EC2D6"
-                        android:layout_marginTop="8dp" />
+                        android:textColor="#FFFFFF" />
+
+                    <TextView
+                        android:id="@+id/text_medicine_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="0 medicines scheduled"
+                        android:textSize="16sp"
+                        android:textColor="#FFFFFF" />
+
+                    <TextView
+                        android:id="@+id/text_next_reminder"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="No upcoming reminders"
+                        android:textSize="14sp"
+                        android:textColor="#FFFFFF" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Settings Card -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_settings"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:layout_margin="8dp"
-                app:cardElevation="4dp"
-                app:cardCornerRadius="16dp"
-                app:cardBackgroundColor="#FFFFFF">
+            <!-- Quick Actions Title -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Quick Actions"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#212121" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="16dp">
+            <!-- Action Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal"
+                android:weightSum="2">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="⚙️"
-                        android:textSize="40sp" />
+                <!-- Add Medicine Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_add_medicine"
+                    android:layout_width="0dp"
+                    android:layout_height="140dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    app:cardElevation="4dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardBackgroundColor="#FFFFFF">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Settings"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="#5EC2D6"
-                        android:layout_marginTop="8dp" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="16dp">
 
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="💊"
+                            android:textSize="48sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Add Medicine"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#E91E63"
+                            android:layout_marginTop="8dp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- View All Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_view_reminders"
+                    android:layout_width="0dp"
+                    android:layout_height="140dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    app:cardElevation="4dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardBackgroundColor="#FFFFFF">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📋"
+                            android:textSize="48sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="View All"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#E91E63"
+                            android:layout_marginTop="8dp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
         </LinearLayout>
+    </ScrollView>
 
-    </LinearLayout>
+    <!-- Bottom Navigation -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        app:itemIconTint="@color/bottom_nav_color"
+        app:itemTextColor="@color/bottom_nav_color"
+        app:menu="@menu/bottom_nav_menu"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

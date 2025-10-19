@@ -6,21 +6,22 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.AbdulPaito.medtrack.database.DatabaseHelper;
 import com.AbdulPaito.medtrack.database.Medicine;
+
 import java.util.List;
 
-/**
- * MedicineAdapter - Displays medicines in RecyclerView
- */
 public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.MedicineViewHolder> {
 
     private List<Medicine> medicineList;
     private OnMedicineClickListener clickListener;
     private OnDeleteClickListener deleteListener;
 
-    // Interfaces for click events
+    // Interfaces for click events (optional)
     public interface OnMedicineClickListener {
         void onMedicineClick(Medicine medicine);
     }
@@ -61,24 +62,85 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.Medici
             holder.textInstructions.setVisibility(View.GONE);
         }
 
-        // Mark as Taken button
+        // ✅ Mark as Taken Button
         holder.btnMarkTaken.setOnClickListener(v -> {
-            if (clickListener != null) {
-                clickListener.onMedicineClick(medicine);
-            }
+            new androidx.appcompat.app.AlertDialog.Builder(v.getContext())
+                    .setTitle("Mark as Taken")
+                    .setMessage("Did you take " + medicine.getMedicineName() + "?")
+                    .setNegativeButton("Cancel", null)
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        DatabaseHelper dbHelper = new DatabaseHelper(v.getContext());
+
+                        // 1) Add to history
+                        dbHelper.addHistory(
+                                medicine.getMedicineName(),
+                                medicine.getReminderTime(),
+                                "Taken"
+                        );
+
+                        // 2) Delete from medicines table
+                        dbHelper.deleteMedicine(medicine.getId());
+
+                        // 3) Remove from list (smooth)
+                        v.postDelayed(() -> {
+                            int pos = holder.getAdapterPosition();
+                            if (pos != RecyclerView.NO_POSITION) {
+                                medicineList.remove(pos);
+                                notifyItemRemoved(pos);
+                            }
+                        }, 500);
+                    })
+                    .show();
         });
 
-        // Delete button
+        // 🗑️ Delete button (confirmation dialog)
         holder.btnDelete.setOnClickListener(v -> {
-            if (deleteListener != null) {
-                deleteListener.onDeleteClick(medicine, holder.getAdapterPosition());
-            }
+            new androidx.appcompat.app.AlertDialog.Builder(v.getContext())
+                    .setTitle("Delete Medicine")
+                    .setMessage("Are you sure you want to delete " + medicine.getMedicineName() + "?")
+                    .setNegativeButton("Cancel", null)
+                    .setPositiveButton("Delete", (dialog, which) -> {
+                        DatabaseHelper dbHelper = new DatabaseHelper(v.getContext());
+                        dbHelper.deleteMedicine(medicine.getId());
+
+                        int pos = holder.getAdapterPosition();
+                        if (pos != RecyclerView.NO_POSITION) {
+                            medicineList.remove(pos);
+                            notifyItemRemoved(pos);
+                        }
+
+                        android.widget.Toast.makeText(v.getContext(),
+                                "Medicine deleted", android.widget.Toast.LENGTH_SHORT).show();
+
+                        if (deleteListener != null) {
+                            deleteListener.onDeleteClick(medicine, pos);
+                        }
+                    })
+                    .show();
         });
     }
 
     @Override
     public int getItemCount() {
         return medicineList.size();
+    }
+
+    /**
+     * ✅ Helper method: remove an item when swiped (for swipe-to-delete)
+     */
+    public Medicine removeItem(int position) {
+        Medicine removed = medicineList.get(position);
+        medicineList.remove(position);
+        notifyItemRemoved(position);
+        return removed;
+    }
+
+    /**
+     * ✅ Helper method: restore an item if user taps "Undo"
+     */
+    public void restoreItem(Medicine medicine, int position) {
+        medicineList.add(position, medicine);
+        notifyItemInserted(position);
     }
 
     /**
@@ -96,13 +158,10 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.Medici
 
             return String.format("%d:%02d %s", displayHour, minute, amPm);
         } catch (Exception e) {
-            return time24; // Return original if parsing fails
+            return time24;
         }
     }
 
-    /**
-     * ViewHolder - Holds references to views in each list item
-     */
     static class MedicineViewHolder extends RecyclerView.ViewHolder {
         TextView textMedicineName;
         TextView textDosage;
