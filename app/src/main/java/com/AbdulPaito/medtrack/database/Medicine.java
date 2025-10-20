@@ -9,29 +9,32 @@ public class Medicine {
     private String medicineName;
     private String dosage;
     private String instructions;
-    private String reminderTime;  // Format: HH:mm (e.g., "09:30")
-    private String frequency;     // daily, 12hours, custom
+    private String reminderTime;   // Format: HH:mm (e.g., "09:30")
+    private String reminderDate;   // Format: yyyy-MM-dd or "Oct 20, 2025"
+    private String frequency;      // daily, 12hours, custom
     private boolean isActive;
 
     // Constructor for creating new medicine (without ID)
     public Medicine(String medicineName, String dosage, String instructions,
-                    String reminderTime, String frequency) {
+                    String reminderTime, String reminderDate, String frequency) {
         this.medicineName = medicineName;
         this.dosage = dosage;
         this.instructions = instructions;
         this.reminderTime = reminderTime;
+        this.reminderDate = reminderDate;
         this.frequency = frequency;
         this.isActive = true;
     }
 
     // Constructor for loading from database (with ID)
     public Medicine(int id, String medicineName, String dosage, String instructions,
-                    String reminderTime, String frequency, boolean isActive) {
+                    String reminderTime, String reminderDate, String frequency, boolean isActive) {
         this.id = id;
         this.medicineName = medicineName;
         this.dosage = dosage;
         this.instructions = instructions;
         this.reminderTime = reminderTime;
+        this.reminderDate = reminderDate;
         this.frequency = frequency;
         this.isActive = isActive;
     }
@@ -75,6 +78,14 @@ public class Medicine {
 
     public void setReminderTime(String reminderTime) {
         this.reminderTime = reminderTime;
+    }
+
+    public String getReminderDate() {
+        return reminderDate;
+    }
+
+    public void setReminderDate(String reminderDate) {
+        this.reminderDate = reminderDate;
     }
 
     public String getFrequency() {

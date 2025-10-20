@@ -13,7 +13,7 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "medtrack.db";
-    private static final int DATABASE_VERSION = 3; // 🔼 bumped to ensure upgrade runs
+    private static final int DATABASE_VERSION = 4; // 🔼 bumped again (important for schema update)
 
     // ===== Medicines Table =====
     private static final String TABLE_MEDICINES = "medicines";
@@ -22,6 +22,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String KEY_DOSAGE = "dosage";
     private static final String KEY_INSTRUCTIONS = "instructions";
     private static final String KEY_REMINDER_TIME = "reminder_time";
+    private static final String KEY_DATE = "date"; // ✅ added column
     private static final String KEY_FREQUENCY = "frequency";
     private static final String KEY_IS_ACTIVE = "is_active";
     private static final String KEY_CREATED_AT = "created_at";
@@ -45,6 +46,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + KEY_DOSAGE + " TEXT NOT NULL,"
                 + KEY_INSTRUCTIONS + " TEXT,"
                 + KEY_REMINDER_TIME + " TEXT NOT NULL,"
+                + KEY_DATE + " TEXT NOT NULL," // ✅ date column
                 + KEY_FREQUENCY + " TEXT NOT NULL,"
                 + KEY_IS_ACTIVE + " INTEGER DEFAULT 1,"
                 + KEY_CREATED_AT + " DATETIME DEFAULT CURRENT_TIMESTAMP"
@@ -79,6 +81,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(KEY_DOSAGE, medicine.getDosage());
         values.put(KEY_INSTRUCTIONS, medicine.getInstructions());
         values.put(KEY_REMINDER_TIME, medicine.getReminderTime());
+        values.put(KEY_DATE, medicine.getReminderDate());
         values.put(KEY_FREQUENCY, medicine.getFrequency());
         values.put(KEY_IS_ACTIVE, medicine.isActive() ? 1 : 0);
 
@@ -87,7 +90,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return id;
     }
 
-    // ✅ Helper for Swipe-Undo Restore
     public void restoreMedicine(Medicine medicine) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -96,6 +98,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(KEY_DOSAGE, medicine.getDosage());
         values.put(KEY_INSTRUCTIONS, medicine.getInstructions());
         values.put(KEY_REMINDER_TIME, medicine.getReminderTime());
+        values.put(KEY_DATE, medicine.getReminderDate());
         values.put(KEY_FREQUENCY, medicine.getFrequency());
         values.put(KEY_IS_ACTIVE, medicine.isActive() ? 1 : 0);
         db.insert(TABLE_MEDICINES, null, values);
@@ -119,6 +122,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         cursor.getString(cursor.getColumnIndexOrThrow(KEY_DOSAGE)),
                         cursor.getString(cursor.getColumnIndexOrThrow(KEY_INSTRUCTIONS)),
                         cursor.getString(cursor.getColumnIndexOrThrow(KEY_REMINDER_TIME)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(KEY_DATE)), // ✅ added
                         cursor.getString(cursor.getColumnIndexOrThrow(KEY_FREQUENCY)),
                         cursor.getInt(cursor.getColumnIndexOrThrow(KEY_IS_ACTIVE)) == 1
                 );

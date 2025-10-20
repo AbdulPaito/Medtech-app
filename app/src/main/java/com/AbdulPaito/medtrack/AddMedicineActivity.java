@@ -1,5 +1,6 @@
 package com.AbdulPaito.medtrack;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -10,12 +11,14 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.AbdulPaito.medtrack.database.DatabaseHelper;
 import com.AbdulPaito.medtrack.database.Medicine;
+import java.util.Calendar;
 
 public class AddMedicineActivity extends AppCompatActivity {
 
     private EditText editMedicineName;
     private EditText editDosage;
     private EditText editInstructions;
+    private EditText editDate;  // ✅ added for date
     private TimePicker timePicker;
     private RadioGroup radioGroupFrequency;
     private Button btnSave;
@@ -41,12 +44,16 @@ public class AddMedicineActivity extends AppCompatActivity {
         editMedicineName = findViewById(R.id.edit_medicine_name);
         editDosage = findViewById(R.id.edit_dosage);
         editInstructions = findViewById(R.id.edit_instructions);
+        editDate = findViewById(R.id.edit_date); // ✅ initialize date input
         timePicker = findViewById(R.id.time_picker);
         radioGroupFrequency = findViewById(R.id.radio_group_frequency);
         btnSave = findViewById(R.id.btn_save);
         btnCancel = findViewById(R.id.btn_cancel);
 
-        timePicker.setIs24HourView(false);  // 12-hour format with AM/PM
+        timePicker.setIs24HourView(false); // 12-hour format with AM/PM
+
+        // ✅ Open date picker when clicking on the date field
+        editDate.setOnClickListener(v -> showDatePicker());
     }
 
     private void setupButtons() {
@@ -54,10 +61,33 @@ public class AddMedicineActivity extends AppCompatActivity {
         btnCancel.setOnClickListener(view -> finish());
     }
 
+    private void showDatePicker() {
+        // ✅ Get current date
+        final Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        // ✅ Show DatePickerDialog
+        DatePickerDialog datePickerDialog = new DatePickerDialog(
+                this,
+                (view, selectedYear, selectedMonth, selectedDay) -> {
+                    String formattedDate = String.format("%02d/%02d/%d",
+                            selectedMonth + 1, selectedDay, selectedYear);
+                    editDate.setText(formattedDate);
+                },
+                year, month, day
+        );
+
+        datePickerDialog.show();
+    }
+
+    // ✅ FIXED VERSION (saves medicine with date)
     private void saveMedicine() {
         String medicineName = editMedicineName.getText().toString().trim();
         String dosage = editDosage.getText().toString().trim();
         String instructions = editInstructions.getText().toString().trim();
+        String selectedDate = editDate.getText().toString().trim();
 
         if (medicineName.isEmpty()) {
             editMedicineName.setError("Please enter medicine name");
@@ -71,6 +101,12 @@ public class AddMedicineActivity extends AppCompatActivity {
             return;
         }
 
+        if (selectedDate.isEmpty()) {
+            editDate.setError("Please select a date");
+            editDate.requestFocus();
+            return;
+        }
+
         int hour = timePicker.getHour();
         int minute = timePicker.getMinute();
         String reminderTime = String.format("%02d:%02d", hour, minute);
@@ -79,7 +115,15 @@ public class AddMedicineActivity extends AppCompatActivity {
         RadioButton selectedRadioButton = findViewById(selectedFrequencyId);
         String frequency = selectedRadioButton.getText().toString().toLowerCase();
 
-        Medicine medicine = new Medicine(medicineName, dosage, instructions, reminderTime, frequency);
+        // ✅ Correct order
+        Medicine medicine = new Medicine(
+                medicineName,
+                dosage,
+                instructions,
+                reminderTime,
+                selectedDate,
+                frequency
+        );
 
         long id = databaseHelper.addMedicine(medicine);
 
@@ -89,15 +133,16 @@ public class AddMedicineActivity extends AppCompatActivity {
             AlarmScheduler alarmScheduler = new AlarmScheduler(this);
             alarmScheduler.scheduleMedicineAlarm(medicine);
 
-            // Format time with AM/PM for display
             String displayTime = formatTime(hour, minute);
-            Toast.makeText(this, "Medicine added! Reminder set for " + displayTime,
+            Toast.makeText(this,
+                    "Medicine added for " + selectedDate + " at " + displayTime,
                     Toast.LENGTH_LONG).show();
-            finish();  // Close activity and return to home
+            finish();
         } else {
             Toast.makeText(this, "Error adding medicine", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     /**
      * Format time to 12-hour with AM/PM

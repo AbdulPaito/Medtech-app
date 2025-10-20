@@ -15,41 +15,69 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:padding="16dp">
 
-        <!-- Medicine Name -->
+        <!-- Icon -->
         <TextView
-            android:id="@+id/text_medicine_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Paracetamol"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:textColor="#222222"
-            android:fontFamily="sans-serif-medium" />
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:text="✓"
+            android:textSize="24sp"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/circle_green"
+            android:gravity="center"
+            android:layout_marginEnd="16dp" />
 
-        <!-- Time Taken -->
-        <TextView
-            android:id="@+id/text_medicine_time"
-            android:layout_width="match_parent"
+        <!-- Content -->
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Taken at 8:00 AM"
-            android:textColor="#666666"
-            android:textSize="14sp"
-            android:layout_marginTop="6dp" />
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-        <!-- Status -->
-        <TextView
-            android:id="@+id/text_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Taken"
-            android:textColor="#3BB143"
-            android:textStyle="bold"
-            android:textSize="15sp"
-            android:layout_marginTop="4dp" />
+            <!-- Medicine Name -->
+            <TextView
+                android:id="@+id/text_medicine_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Paracetamol"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:textColor="#222222"
+                android:fontFamily="sans-serif-medium" />
 
+            <!-- Time Taken -->
+            <TextView
+                android:id="@+id/text_medicine_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Taken at 8:00 AM"
+                android:textColor="#666666"
+                android:textSize="14sp"
+                android:layout_marginTop="4dp" />
+
+            <!-- Date Taken -->
+            <TextView
+                android:id="@+id/text_medicine_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Date: Oct 20, 2025"
+                android:textColor="#666666"
+                android:textSize="14sp"
+                android:layout_marginTop="2dp" />
+
+            <!-- Status -->
+            <TextView
+                android:id="@+id/text_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Status: Taken"
+                android:textColor="#3BB143"
+                android:textStyle="bold"
+                android:textSize="15sp"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

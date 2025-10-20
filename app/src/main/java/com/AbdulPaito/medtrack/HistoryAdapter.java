@@ -41,6 +41,10 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
         String formattedTime = formatTo12Hour(item.getTime());
         holder.textMedicineTime.setText("Taken at: " + formattedTime);
 
+        // Show date (e.g., Oct 20, 2025)
+        String formattedDate = formatDate(item.getDate());
+        holder.textMedicineDate.setText("Date: " + formattedDate);
+
         // Show status
         holder.textStatus.setText("Status: " + item.getStatus());
     }
@@ -51,12 +55,13 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView textMedicineName, textMedicineTime, textStatus;
+        TextView textMedicineName, textMedicineTime, textMedicineDate, textStatus;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             textMedicineName = itemView.findViewById(R.id.text_medicine_name);
             textMedicineTime = itemView.findViewById(R.id.text_medicine_time);
+            textMedicineDate = itemView.findViewById(R.id.text_medicine_date);
             textStatus = itemView.findViewById(R.id.text_status);
         }
     }
@@ -70,6 +75,18 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
             return outputFormat.format(date);
         } catch (ParseException e) {
             return time; // fallback if parsing fails
+        }
+    }
+
+    // Helper method to format date (e.g. "2025-10-20") to readable form (e.g. "Oct 20, 2025")
+    private String formatDate(String date) {
+        try {
+            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            SimpleDateFormat outputFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+            Date parsedDate = inputFormat.parse(date);
+            return outputFormat.format(parsedDate);
+        } catch (ParseException e) {
+            return date; // fallback if parsing fails
         }
     }
 }

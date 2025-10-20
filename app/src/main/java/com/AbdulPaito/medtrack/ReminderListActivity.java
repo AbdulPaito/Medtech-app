@@ -62,7 +62,7 @@ public class ReminderListActivity extends AppCompatActivity {
             recyclerView.setVisibility(View.VISIBLE);
             emptyView.setVisibility(View.GONE);
 
-            adapter = new MedicineAdapter(medicineList, this::onMedicineClick, this::onDeleteClick);
+            adapter = new MedicineAdapter(this, medicineList);
             recyclerView.setAdapter(adapter);
 
             // 👇 Swipe-to-delete with undo confirmation

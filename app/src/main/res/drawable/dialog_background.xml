@@ -1,0 +1,13 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#FFFFFF" /> <!-- white background -->
+    <corners android:radius="20dp" /> <!-- rounded corners -->
+    <padding
+        android:left="24dp"
+        android:top="24dp"
+        android:right="24dp"
+        android:bottom="24dp" />
+    <stroke
+        android:width="2dp"
+        android:color="#FF9DBD" /> <!-- light pink border -->
+</shape>

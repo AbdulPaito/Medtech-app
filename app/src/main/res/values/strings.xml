@@ -4,6 +4,11 @@
     <string name="view_reminders">View Reminders</string>
     <string name="history">History</string>
     <string name="settings">Settings</string>
+    <string name="pending_medicine_reminders">Pending Medicine Reminders</string>
+    <string name="medicine_icon">Medicine Icon</string>
+    <string name="delete">Delete</string>
+
+
 
     <!-- Home Screen Strings -->
     <string name="no_medicines_added">No medicines added yet</string>
