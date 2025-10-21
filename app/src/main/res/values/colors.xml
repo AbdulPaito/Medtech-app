@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Light theme colors -->
     <color name="primary">#5EC2D6</color>
     <color name="primary_dark">#4BA3B5</color>
     <color name="secondary">#FF6B6B</color>
@@ -8,7 +9,14 @@
     <color name="text_primary">#212121</color>
     <color name="text_secondary">#757575</color>
 
-    <!-- Default Android colors -->
+    <!-- Dark theme colors -->
+    <color name="dark_primary">#4BA3B5</color>
+    <color name="dark_background">#121212</color>
+    <color name="dark_surface">#1E1E1E</color>
+    <color name="dark_text_primary">#E0E0E0</color>
+    <color name="dark_text_secondary">#9E9E9E</color>
+
+    <!-- Default Android colors (keep for compatibility) -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
