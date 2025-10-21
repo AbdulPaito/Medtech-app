@@ -2,6 +2,7 @@ package com.AbdulPaito.medtrack;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
@@ -11,6 +12,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.AbdulPaito.medtrack.database.DatabaseHelper;
 import com.AbdulPaito.medtrack.database.Medicine;
+import com.google.android.material.textfield.TextInputLayout;
+import com.google.android.material.textfield.TextInputEditText;
 import java.util.Calendar;
 
 public class AddMedicineActivity extends AppCompatActivity {
@@ -18,9 +21,14 @@ public class AddMedicineActivity extends AppCompatActivity {
     private EditText editMedicineName;
     private EditText editDosage;
     private EditText editInstructions;
-    private EditText editDate;  // ✅ added for date
+    private EditText editDate;
     private TimePicker timePicker;
     private RadioGroup radioGroupFrequency;
+    private RadioButton radioDaily;
+    private RadioButton radio12Hours;
+    private RadioButton radioCustom;
+    private TextInputLayout layoutCustomFrequency;
+    private TextInputEditText editCustomFrequency;
     private Button btnSave;
     private Button btnCancel;
     private DatabaseHelper databaseHelper;
@@ -38,21 +46,27 @@ public class AddMedicineActivity extends AppCompatActivity {
         databaseHelper = new DatabaseHelper(this);
         initViews();
         setupButtons();
+        setupFrequencyListener();
     }
 
     private void initViews() {
         editMedicineName = findViewById(R.id.edit_medicine_name);
         editDosage = findViewById(R.id.edit_dosage);
         editInstructions = findViewById(R.id.edit_instructions);
-        editDate = findViewById(R.id.edit_date); // ✅ initialize date input
+        editDate = findViewById(R.id.edit_date);
         timePicker = findViewById(R.id.time_picker);
         radioGroupFrequency = findViewById(R.id.radio_group_frequency);
+        radioDaily = findViewById(R.id.radio_daily);
+        radio12Hours = findViewById(R.id.radio_12hours);
+        radioCustom = findViewById(R.id.radio_custom);
+        layoutCustomFrequency = findViewById(R.id.layout_custom_frequency);
+        editCustomFrequency = findViewById(R.id.edit_custom_frequency);
         btnSave = findViewById(R.id.btn_save);
         btnCancel = findViewById(R.id.btn_cancel);
 
         timePicker.setIs24HourView(false); // 12-hour format with AM/PM
 
-        // ✅ Open date picker when clicking on the date field
+        // Open date picker when clicking on the date field
         editDate.setOnClickListener(v -> showDatePicker());
     }
 
@@ -61,14 +75,28 @@ public class AddMedicineActivity extends AppCompatActivity {
         btnCancel.setOnClickListener(view -> finish());
     }
 
+    // ✅ NEW: Show/hide custom frequency input
+    private void setupFrequencyListener() {
+        radioGroupFrequency.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.radio_custom) {
+                // Show custom input when Custom is selected
+                layoutCustomFrequency.setVisibility(View.VISIBLE);
+                editCustomFrequency.requestFocus();
+            } else {
+                // Hide custom input for Daily or Every 12 hours
+                layoutCustomFrequency.setVisibility(View.GONE);
+            }
+        });
+    }
+
     private void showDatePicker() {
-        // ✅ Get current date
+        // Get current date
         final Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-        // ✅ Show DatePickerDialog
+        // Show DatePickerDialog
         DatePickerDialog datePickerDialog = new DatePickerDialog(
                 this,
                 (view, selectedYear, selectedMonth, selectedDay) -> {
@@ -82,7 +110,7 @@ public class AddMedicineActivity extends AppCompatActivity {
         datePickerDialog.show();
     }
 
-    // ✅ FIXED VERSION (saves medicine with date)
+    // ✅ UPDATED: Handle custom frequency
     private void saveMedicine() {
         String medicineName = editMedicineName.getText().toString().trim();
         String dosage = editDosage.getText().toString().trim();
@@ -111,11 +139,25 @@ public class AddMedicineActivity extends AppCompatActivity {
         int minute = timePicker.getMinute();
         String reminderTime = String.format("%02d:%02d", hour, minute);
 
-        int selectedFrequencyId = radioGroupFrequency.getCheckedRadioButtonId();
-        RadioButton selectedRadioButton = findViewById(selectedFrequencyId);
-        String frequency = selectedRadioButton.getText().toString().toLowerCase();
+        // ✅ Get frequency based on selection
+        String frequency;
+        if (radioDaily.isChecked()) {
+            frequency = "Daily";
+        } else if (radio12Hours.isChecked()) {
+            frequency = "Every 12 hours";
+        } else if (radioCustom.isChecked()) {
+            // Get custom frequency from input
+            frequency = editCustomFrequency.getText().toString().trim();
 
-        // ✅ Correct order
+            if (frequency.isEmpty()) {
+                editCustomFrequency.setError("Please enter custom frequency");
+                editCustomFrequency.requestFocus();
+                return;
+            }
+        } else {
+            frequency = "Daily"; // default
+        }
+
         Medicine medicine = new Medicine(
                 medicineName,
                 dosage,
@@ -135,14 +177,13 @@ public class AddMedicineActivity extends AppCompatActivity {
 
             String displayTime = formatTime(hour, minute);
             Toast.makeText(this,
-                    "Medicine added for " + selectedDate + " at " + displayTime,
+                    "Medicine added for " + selectedDate + " at " + displayTime + " (" + frequency + ")",
                     Toast.LENGTH_LONG).show();
             finish();
         } else {
             Toast.makeText(this, "Error adding medicine", Toast.LENGTH_SHORT).show();
         }
     }
-
 
     /**
      * Format time to 12-hour with AM/PM

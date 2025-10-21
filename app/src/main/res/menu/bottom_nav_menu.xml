@@ -17,6 +17,11 @@
         android:title="History" />
 
     <item
+        android:id="@+id/navigation_statistics"
+        android:icon="@drawable/ic_chart"
+        android:title="Stats" />
+
+    <item
         android:id="@+id/navigation_settings"
         android:icon="@drawable/ic_settings"
         android:title="Settings" />

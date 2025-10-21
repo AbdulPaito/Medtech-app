@@ -3,9 +3,11 @@ package com.AbdulPaito.medtrack;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.ParseException;
@@ -47,6 +49,19 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
 
         // Show status
         holder.textStatus.setText("Status: " + item.getStatus());
+
+        // ✅ NEW: Change icon based on status (Missed = Red X, Taken = Green Check)
+        if (item.getStatus().equalsIgnoreCase("Missed")) {
+            // RED X for MISSED
+            holder.iconBackground.setImageResource(R.drawable.circle_red);
+            holder.iconStatus.setImageResource(R.drawable.ic_close_circle);
+            holder.textStatus.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), android.R.color.holo_red_light));
+        } else {
+            // GREEN CHECK for TAKEN
+            holder.iconBackground.setImageResource(R.drawable.circle_green);
+            holder.iconStatus.setImageResource(R.drawable.ic_check_circle);
+            holder.textStatus.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), android.R.color.holo_green_dark));
+        }
     }
 
     @Override
@@ -56,6 +71,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView textMedicineName, textMedicineTime, textMedicineDate, textStatus;
+        ImageView iconBackground, iconStatus; // ✅ NEW: Added icon views
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -63,6 +79,8 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
             textMedicineTime = itemView.findViewById(R.id.text_medicine_time);
             textMedicineDate = itemView.findViewById(R.id.text_medicine_date);
             textStatus = itemView.findViewById(R.id.text_status);
+            iconBackground = itemView.findViewById(R.id.icon_background); // ✅ NEW
+            iconStatus = itemView.findViewById(R.id.icon_status); // ✅ NEW
         }
     }
 

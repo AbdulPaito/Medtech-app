@@ -18,16 +18,28 @@
         android:orientation="horizontal"
         android:padding="16dp">
 
-        <!-- Icon -->
-        <TextView
+        <!-- Status Icon -->
+        <FrameLayout
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:text="✓"
-            android:textSize="24sp"
-            android:textColor="#FFFFFF"
-            android:background="@drawable/circle_green"
-            android:gravity="center"
-            android:layout_marginEnd="16dp" />
+            android:layout_marginEnd="16dp">
+
+            <ImageView
+                android:id="@+id/icon_background"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/circle_green"
+                android:contentDescription="Status background" />
+
+            <ImageView
+                android:id="@+id/icon_status"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_check_circle"
+                android:contentDescription="Status Icon"
+                app:tint="#FFFFFF" />
+        </FrameLayout>
 
         <!-- Content -->
         <LinearLayout

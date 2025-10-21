@@ -107,7 +107,11 @@ public class MainActivity extends AppCompatActivity {
             } else if (itemId == R.id.navigation_history) {
                 startActivity(new Intent(this, HistoryActivity.class));
                 return true;
-            } else if (itemId == R.id.navigation_settings) {  // ✅ FIXED missing `}` here
+            } else if (itemId == R.id.navigation_statistics) {  // ✅ Added Stats tab
+                startActivity(new Intent(this, StatisticsActivity.class));
+                overridePendingTransition(0, 0);
+                return true;
+            } else if (itemId == R.id.navigation_settings) {
                 startActivity(new Intent(this, SettingsActivity.class));
                 return true;
             }
@@ -115,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
     }
+
 
     private void updateStats() {
         int count = databaseHelper.getMedicineCount();

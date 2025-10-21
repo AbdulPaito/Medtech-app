@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
     <!-- Permissions -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
     <application
         android:allowBackup="true"
@@ -18,36 +22,50 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MedTrack"
         tools:targetApi="31">
+
         <activity
             android:name=".HistoryActivity"
             android:exported="false" />
-        <!-- Main Activity (Home Screen) -->
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity> <!-- Add Medicine Activity -->
+        </activity>
+
         <activity
             android:name=".AddMedicineActivity"
             android:exported="false" />
+
         <activity
             android:name=".ReminderListActivity"
-            android:exported="false" /> <!-- Alarm Receiver -->
+            android:exported="false" />
+
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
+
         <receiver
             android:name=".AlarmReceiver"
             android:enabled="true"
-            android:exported="false" /> <!-- Notification Action Receiver -->
+            android:exported="false" />
+
         <receiver
             android:name=".NotificationActionReceiver"
             android:enabled="true"
             android:exported="false" />
 
+        <service
+            android:name=".AlarmSoundService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
         <activity
-            android:name=".SettingsActivity"
+            android:name=".StatisticsActivity"
             android:exported="false" />
 
     </application>
