@@ -34,6 +34,10 @@ android {
     buildFeatures {
         viewBinding = true  // ✅ Easier to access XML views safely
     }
+
+    buildFeatures {
+        viewBinding = true  // ✅ Easier to access XML views safely
+    }
 }
 
 dependencies {
