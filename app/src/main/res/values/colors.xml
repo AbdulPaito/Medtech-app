@@ -1,14 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#5EC2D6</color>
-    <color name="primary_dark">#4BA3B5</color>
-    <color name="secondary">#FF6B6B</color>
-    <color name="background">#F8F9FA</color>
+    <!-- Modern Primary Colors -->
+    <color name="primary">#6366F1</color>
+    <color name="primary_dark">#4F46E5</color>
+    <color name="primary_light">#818CF8</color>
+    <color name="secondary">#EC4899</color>
+    <color name="secondary_light">#F472B6</color>
+    
+    <!-- Background Colors -->
+    <color name="background">#F8FAFC</color>
+    <color name="background_gradient_start">#EEF2FF</color>
+    <color name="background_gradient_end">#FCE7F3</color>
+    <color name="surface">#FFFFFF</color>
     <color name="white">#FFFFFF</color>
-    <color name="text_primary">#212121</color>
-    <color name="text_secondary">#757575</color>
+    
+    <!-- Text Colors -->
+    <color name="text_primary">#1E293B</color>
+    <color name="text_secondary">#64748B</color>
+    <color name="text_tertiary">#94A3B8</color>
+    
+    <!-- Accent Colors -->
+    <color name="accent_green">#10B981</color>
+    <color name="accent_red">#EF4444</color>
+    <color name="accent_orange">#F59E0B</color>
+    <color name="accent_blue">#3B82F6</color>
+    <color name="accent_purple">#A855F7</color>
+    
+    <!-- Card Colors -->
+    <color name="card_1">#6366F1</color>
+    <color name="card_2">#8B5CF6</color>
+    <color name="card_3">#EC4899</color>
+    <color name="card_4">#F43F5E</color>
+    
+    <!-- Status Colors -->
+    <color name="success">#10B981</color>
+    <color name="error">#EF4444</color>
+    <color name="warning">#F59E0B</color>
+    <color name="info">#3B82F6</color>
 
-    <!-- Default Android colors -->
+    <!-- Dark theme colors -->
+    <color name="dark_primary">#818CF8</color>
+    <color name="dark_background">#0F172A</color>
+    <color name="dark_surface">#1E293B</color>
+    <color name="dark_text_primary">#F1F5F9</color>
+    <color name="dark_text_secondary">#94A3B8</color>
+
+    <!-- Default Android colors (keep for compatibility) -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>

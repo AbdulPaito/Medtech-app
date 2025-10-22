@@ -41,12 +41,27 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.Medici
         Medicine medicine = medicineList.get(position);
 
         // 🩷 Display details with icons and bold text
-        holder.textMedicineName.setText("💊 Medicine: " + medicine.getMedicineName());
-        holder.textDosage.setText("💧 Dosage: " + medicine.getDosage());
-        holder.textTime.setText("⏰ " + formatTime(medicine.getReminderTime()));
-        holder.textDate.setText("📅 Date: " + medicine.getReminderDate());
-        holder.textFrequency.setText("🔁 Frequency: " + medicine.getFrequency());
-        holder.textInstructions.setText("📝 Instructions: " + medicine.getInstructions());
+        holder.textMedicineName.setText(medicine.getMedicineName());
+        holder.textDosage.setText(medicine.getDosage());
+        holder.textTime.setText(formatTime(medicine.getReminderTime()));
+        holder.textDate.setText(medicine.getReminderDate());
+        holder.textFrequency.setText(medicine.getFrequency());
+        holder.textInstructions.setText(medicine.getInstructions());
+
+        // Long click to edit
+        holder.itemView.setOnLongClickListener(v -> {
+            new MaterialAlertDialogBuilder(context)
+                    .setTitle("Edit Medicine")
+                    .setMessage("Do you want to edit " + medicine.getMedicineName() + "?")
+                    .setPositiveButton("Edit", (dialog, which) -> {
+                        android.content.Intent intent = new android.content.Intent(context, EditMedicineActivity.class);
+                        intent.putExtra("MEDICINE_ID", medicine.getId());
+                        context.startActivity(intent);
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+            return true;
+        });
 
         // ✅ Mark as Taken
         holder.btnMarkTaken.setOnClickListener(v -> {
@@ -104,6 +119,13 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.Medici
     @Override
     public int getItemCount() {
         return medicineList.size();
+    }
+
+    // Update list for search functionality
+    public void updateList(List<Medicine> newList) {
+        medicineList.clear();
+        medicineList.addAll(newList);
+        notifyDataSetChanged();
     }
 
     // 🧩 ViewHolder class

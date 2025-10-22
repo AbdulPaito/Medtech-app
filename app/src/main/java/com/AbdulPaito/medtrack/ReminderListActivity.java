@@ -4,7 +4,11 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import com.google.android.material.snackbar.Snackbar;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.AbdulPaito.medtrack.database.DatabaseHelper;
 import com.AbdulPaito.medtrack.database.Medicine;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ReminderListActivity extends AppCompatActivity {
@@ -21,8 +26,11 @@ public class ReminderListActivity extends AppCompatActivity {
     private MedicineAdapter adapter;
     private DatabaseHelper databaseHelper;
     private List<Medicine> medicineList;
+    private List<Medicine> filteredList;
     private View emptyView;  // Empty state view
     private FloatingActionButton fabAdd;
+    private EditText searchBar;
+    private TextView textPendingHeader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +44,7 @@ public class ReminderListActivity extends AppCompatActivity {
 
         databaseHelper = new DatabaseHelper(this);
         initViews();
+        setupSearch();
         loadMedicines();
     }
 
@@ -43,6 +52,8 @@ public class ReminderListActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recycler_view_medicines);
         emptyView = findViewById(R.id.text_empty_state);
         fabAdd = findViewById(R.id.fab_add);
+        searchBar = findViewById(R.id.search_bar);
+        textPendingHeader = findViewById(R.id.text_pending_header);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -52,15 +63,52 @@ public class ReminderListActivity extends AppCompatActivity {
         });
     }
 
+    private void setupSearch() {
+        searchBar.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterMedicines(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    private void filterMedicines(String query) {
+        if (query.isEmpty()) {
+            filteredList = new ArrayList<>(medicineList);
+        } else {
+            filteredList = databaseHelper.searchMedicines(query);
+        }
+
+        if (adapter != null) {
+            adapter.updateList(filteredList);
+            
+            if (filteredList.isEmpty()) {
+                recyclerView.setVisibility(View.GONE);
+                emptyView.setVisibility(View.VISIBLE);
+            } else {
+                recyclerView.setVisibility(View.VISIBLE);
+                emptyView.setVisibility(View.GONE);
+            }
+        }
+    }
+
     private void loadMedicines() {
         medicineList = databaseHelper.getAllMedicines();
 
         if (medicineList.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
             emptyView.setVisibility(View.VISIBLE);
+            textPendingHeader.setVisibility(View.GONE);
         } else {
             recyclerView.setVisibility(View.VISIBLE);
             emptyView.setVisibility(View.GONE);
+            textPendingHeader.setVisibility(View.VISIBLE);
 
             adapter = new MedicineAdapter(this, medicineList);
             recyclerView.setAdapter(adapter);

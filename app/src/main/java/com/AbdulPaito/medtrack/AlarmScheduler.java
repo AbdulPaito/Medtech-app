@@ -42,6 +42,9 @@ public class AlarmScheduler {
         if (calendar.getTimeInMillis() <= System.currentTimeMillis()) {
             calendar.add(Calendar.DAY_OF_MONTH, 1);
         }
+        
+        // Schedule 5-minute reminder notification
+        schedule5MinuteReminder(medicine, calendar.getTimeInMillis());
 
         // Create intent for the alarm
         Intent intent = new Intent(context, AlarmReceiver.class);
@@ -81,6 +84,54 @@ public class AlarmScheduler {
                         calendar.getTimeInMillis(),
                         pendingIntent
                 );
+            }
+        }
+    }
+
+    /**
+     * Schedule 5-minute reminder notification before main alarm
+     */
+    private void schedule5MinuteReminder(Medicine medicine, long alarmTimeMillis) {
+        // Calculate time 5 minutes before the main alarm
+        long reminderTime = alarmTimeMillis - (5 * 60 * 1000); // 5 minutes in milliseconds
+        
+        // Only schedule if reminder time is in the future
+        if (reminderTime > System.currentTimeMillis()) {
+            Intent intent = new Intent(context, ReminderNotificationReceiver.class);
+            intent.putExtra("medicine_id", medicine.getId());
+            intent.putExtra("medicine_name", medicine.getMedicineName());
+            intent.putExtra("dosage", medicine.getDosage());
+            
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    medicine.getId() + 10000, // Different request code
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+            );
+            
+            if (alarmManager != null) {
+                // Cancel any existing 5-min reminder first
+                alarmManager.cancel(pendingIntent);
+                
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    alarmManager.setExactAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP,
+                            reminderTime,
+                            pendingIntent
+                    );
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    alarmManager.setExact(
+                            AlarmManager.RTC_WAKEUP,
+                            reminderTime,
+                            pendingIntent
+                    );
+                } else {
+                    alarmManager.set(
+                            AlarmManager.RTC_WAKEUP,
+                            reminderTime,
+                            pendingIntent
+                    );
+                }
             }
         }
     }

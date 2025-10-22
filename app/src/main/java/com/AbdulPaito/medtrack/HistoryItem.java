@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class HistoryItem {
+    private int id;
     private String medicineName;
     private String time;
     private String date;
@@ -17,8 +18,17 @@ public class HistoryItem {
         this.status = status;
     }
 
-    // Optional constructor if you want to manually set the date
+    // Constructor with date
     public HistoryItem(String medicineName, String date, String time, String status) {
+        this.medicineName = medicineName;
+        this.date = date;
+        this.time = time;
+        this.status = status;
+    }
+
+    // Constructor with id (for database retrieval)
+    public HistoryItem(int id, String medicineName, String date, String time, String status) {
+        this.id = id;
         this.medicineName = medicineName;
         this.date = date;
         this.time = time;
@@ -29,6 +39,10 @@ public class HistoryItem {
     private String getCurrentDate() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         return sdf.format(new Date());
+    }
+
+    public int getId() {
+        return id;
     }
 
     public String getMedicineName() {

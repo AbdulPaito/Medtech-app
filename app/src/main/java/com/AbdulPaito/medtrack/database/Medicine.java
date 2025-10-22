@@ -13,6 +13,15 @@ public class Medicine {
     private String reminderDate;   // Format: yyyy-MM-dd or "Oct 20, 2025"
     private String frequency;      // daily, 12hours, custom
     private boolean isActive;
+    
+    // New fields for advanced features
+    private String photoPath;
+    private int totalQuantity;
+    private int remainingQuantity;
+    private int refillThreshold;
+    private String customSoundUri;
+    private String doctorName;
+    private String doctorNotes;
 
     // Constructor for creating new medicine (without ID)
     public Medicine(String medicineName, String dosage, String instructions,
@@ -102,5 +111,73 @@ public class Medicine {
 
     public void setActive(boolean active) {
         isActive = active;
+    }
+
+    // Getters and setters for new fields
+    public String getPhotoPath() {
+        return photoPath;
+    }
+
+    public void setPhotoPath(String photoPath) {
+        this.photoPath = photoPath;
+    }
+
+    public int getTotalQuantity() {
+        return totalQuantity;
+    }
+
+    public void setTotalQuantity(int totalQuantity) {
+        this.totalQuantity = totalQuantity;
+    }
+
+    public int getRemainingQuantity() {
+        return remainingQuantity;
+    }
+
+    public void setRemainingQuantity(int remainingQuantity) {
+        this.remainingQuantity = remainingQuantity;
+    }
+
+    public int getRefillThreshold() {
+        return refillThreshold;
+    }
+
+    public void setRefillThreshold(int refillThreshold) {
+        this.refillThreshold = refillThreshold;
+    }
+
+    public String getCustomSoundUri() {
+        return customSoundUri;
+    }
+
+    public void setCustomSoundUri(String customSoundUri) {
+        this.customSoundUri = customSoundUri;
+    }
+
+    public String getDoctorName() {
+        return doctorName;
+    }
+
+    public void setDoctorName(String doctorName) {
+        this.doctorName = doctorName;
+    }
+
+    public String getDoctorNotes() {
+        return doctorNotes;
+    }
+
+    public void setDoctorNotes(String doctorNotes) {
+        this.doctorNotes = doctorNotes;
+    }
+
+    // Helper methods
+    public boolean needsRefill() {
+        return remainingQuantity > 0 && remainingQuantity <= refillThreshold;
+    }
+
+    public void decrementQuantity() {
+        if (remainingQuantity > 0) {
+            remainingQuantity--;
+        }
     }
 }

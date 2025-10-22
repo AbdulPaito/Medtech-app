@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFE4EC">
+    android:background="@drawable/gradient_background">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -15,11 +15,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_gravity="center_vertical"
-            android:weightSum="1"
-            android:layout_marginBottom="10dp">
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp">
 
             <!-- Title -->
             <TextView
@@ -27,20 +24,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/statistics_title"
-                android:textColor="#000000"
-                android:textSize="22sp"
-                android:textStyle="bold" />
+                android:textColor="@color/text_primary"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-medium" />
 
-            <!-- Last Updated -->
+            <!-- Last Updated - Right aligned -->
             <TextView
                 android:id="@+id/textLastUpdated"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/updated_default"
-                android:textColor="#555555"
-                android:textSize="14sp"
-                android:paddingStart="10dp"
-                android:paddingEnd="10dp" />
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:layout_marginTop="4dp"
+                android:gravity="end" />
         </LinearLayout>
 
         <!-- Card 1: Weekly Adherence Rate -->
@@ -48,15 +46,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            app:cardBackgroundColor="#FFB6C1">
+            app:cardCornerRadius="20dp"
+            app:cardElevation="6dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="#E2E8F0">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="20dp"
+                android:background="@drawable/gradient_card_primary">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -64,7 +64,8 @@
                     android:text="@string/weekly_adherence"
                     android:textStyle="bold"
                     android:textColor="#FFFFFF"
-                    android:textSize="18sp" />
+                    android:textSize="18sp"
+                    android:fontFamily="sans-serif-medium" />
 
                 <ProgressBar
                     android:id="@+id/progressAdherence"
@@ -94,30 +95,33 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            app:cardBackgroundColor="#FFD6E8">
+            app:cardCornerRadius="20dp"
+            app:cardElevation="6dp"
+            app:cardBackgroundColor="#FFFFFF"
+            app:strokeWidth="1dp"
+            app:strokeColor="#E2E8F0">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="20dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/streak_tracking"
                     android:textStyle="bold"
-                    android:textColor="#000000"
-                    android:textSize="18sp" />
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp"
+                    android:fontFamily="sans-serif-medium" />
 
                 <TextView
                     android:id="@+id/textStreak"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/updated_placeholder"
-                    android:textColor="#000000"
+                    android:textColor="@color/text_secondary"
                     android:textSize="16sp"
                     android:paddingTop="4dp" />
             </LinearLayout>
@@ -128,31 +132,46 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            app:cardBackgroundColor="#FFF0F5">
+            app:cardCornerRadius="20dp"
+            app:cardElevation="6dp"
+            app:cardBackgroundColor="#FFFFFF"
+            app:strokeWidth="1dp"
+            app:strokeColor="#E2E8F0">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="20dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/compliance_chart"
+                    android:text="📈 Compliance Trend Chart"
                     android:textStyle="bold"
-                    android:textColor="#000000"
-                    android:textSize="18sp" />
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp"
+                    android:fontFamily="sans-serif-medium" />
 
                 <TextView
+                    android:id="@+id/textChartData"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/compliance_chart_coming"
-                    android:textColor="#555555"
-                    android:textSize="15sp"
-                    android:paddingTop="4dp" />
+                    android:text="Last 7 days"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="12dp" />
+
+                <!-- Simple bar chart visualization -->
+                <LinearLayout
+                    android:id="@+id/chartContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="120dp"
+                    android:orientation="horizontal"
+                    android:gravity="bottom"
+                    android:weightSum="7">
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -161,31 +180,88 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            app:cardBackgroundColor="#FFEFF8">
+            app:cardCornerRadius="20dp"
+            app:cardElevation="6dp"
+            app:cardBackgroundColor="#FFFFFF"
+            app:strokeWidth="1dp"
+            app:strokeColor="#E2E8F0">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="20dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/total_doses_summary"
+                    android:text="💊 Total Doses Summary"
                     android:textStyle="bold"
-                    android:textColor="#000000"
-                    android:textSize="18sp" />
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp"
+                    android:fontFamily="sans-serif-medium" />
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/total_doses_coming"
-                    android:textColor="#555555"
-                    android:textSize="15sp"
-                    android:paddingTop="4dp" />
+                    android:orientation="horizontal"
+                    android:layout_marginTop="16dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <TextView
+                            android:id="@+id/textTotalTaken"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textSize="32sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/success" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="✅ Taken"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_secondary"
+                            android:layout_marginTop="4dp" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="@color/text_tertiary" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <TextView
+                            android:id="@+id/textTotalMissed"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textSize="32sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/error" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="❌ Missed"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_secondary"
+                            android:layout_marginTop="4dp" />
+                    </LinearLayout>
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -193,13 +269,15 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_export_report"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="56dp"
             android:text="@string/export_report"
             android:textAllCaps="false"
+            android:textSize="16sp"
             android:textColor="#FFFFFF"
-            android:backgroundTint="#FF69B4"
+            android:backgroundTint="@color/secondary"
             android:layout_marginTop="20dp"
             android:layout_marginBottom="30dp"
-            app:cornerRadius="24dp" />
+            app:cornerRadius="16dp"
+            app:elevation="4dp" />
     </LinearLayout>
 </ScrollView>
