@@ -6,12 +6,16 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.provider.Settings;
 import android.util.Base64;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -39,71 +43,152 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        
+        try {
+            setContentView(R.layout.activity_main);
 
-        databaseHelper = new DatabaseHelper(this);
-        prefs = getSharedPreferences("MedTrackPrefs", MODE_PRIVATE);
-        
-        initViews();
-        setupButtons();
-        setupBottomNavigation();
-        setupWelcomeName();
-        updateStats();
-        
-        // Request permissions on first launch
-        if (!prefs.getBoolean("permissions_requested", false)) {
-            requestNecessaryPermissions();
+            databaseHelper = new DatabaseHelper(this);
+            prefs = getSharedPreferences("MedTrackPrefs", MODE_PRIVATE);
+            
+            initViews();
+            setupButtons();
+            setupBottomNavigation();
+            setupWelcomeName();
+            updateStats();
+            
+            // Check if opened by alarm
+            handleAlarmIntent();
+            
+            // Start background service to keep app alive (with error handling)
+            // Temporarily disabled to fix crash
+            /*
+            try {
+                startBackgroundService();
+            } catch (Exception e) {
+                android.util.Log.e("MainActivity", "Failed to start background service", e);
+                // Continue without background service if it fails
+            }
+            */
+            
+            // Always check and request permissions if not granted
+            checkAndRequestPermissionsIfNeeded();
+        } catch (Exception e) {
+            android.util.Log.e("MainActivity", "Error in onCreate", e);
+            Toast.makeText(this, "App initialization error. Please restart.", Toast.LENGTH_LONG).show();
         }
     }
-
-    private void initViews() {
-        textMedicineCount = findViewById(R.id.text_medicine_count);
-        textNextReminder = findViewById(R.id.text_next_reminder);
-        textWelcome = findViewById(R.id.text_welcome);
-        imgUserProfile = findViewById(R.id.img_user_profile);
-        cardProfileImage = findViewById(R.id.card_profile_image);
-        
-        // Load and display user profile image
-        loadProfileImage();
-        
-        // Profile image click listener
-        cardProfileImage.setOnClickListener(v -> {
-            Intent intent = new Intent(this, ProfileActivity.class);
-            startActivity(intent);
-        });
+    
+    private void startBackgroundService() {
+        try {
+            Intent serviceIntent = new Intent(this, BackgroundKeepAliveService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent);
+            } else {
+                startService(serviceIntent);
+            }
+        } catch (Exception e) {
+            android.util.Log.e("MainActivity", "Failed to start background service", e);
+        }
     }
     
-    private void loadProfileImage() {
-        String avatarType = prefs.getString("avatar_type", "custom");
-        String profileImageBase64 = prefs.getString("profile_image", "");
-        
-        if (!profileImageBase64.isEmpty()) {
-            // Load custom photo
-            Bitmap bitmap = base64ToBitmap(profileImageBase64);
-            imgUserProfile.setImageBitmap(bitmap);
-            cardProfileImage.setCardBackgroundColor(getResources().getColor(R.color.primary));
-        } else {
-            // Load avatar based on type
-            switch (avatarType) {
-                case "male":
-                    imgUserProfile.setImageResource(R.drawable.ic_male);
-                    cardProfileImage.setCardBackgroundColor(0xFF2196F3); // Blue
-                    break;
-                case "female":
-                    imgUserProfile.setImageResource(R.drawable.ic_female);
-                    cardProfileImage.setCardBackgroundColor(0xFFE91E63); // Pink
-                    break;
-                default:
-                    imgUserProfile.setImageResource(R.drawable.ic_person);
-                    cardProfileImage.setCardBackgroundColor(0xFF9C27B0); // Purple
-                    break;
+    private void handleAlarmIntent() {
+        Intent intent = getIntent();
+        if (intent != null && intent.getBooleanExtra("alarm_active", false)) {
+            // App opened by alarm - keep it open and show alarm status
+            String medicineName = intent.getStringExtra("medicine_name");
+            String dosage = intent.getStringExtra("dosage");
+            
+            if (medicineName != null && dosage != null) {
+                showAlarmStatus(medicineName, dosage);
             }
         }
     }
     
+    private void showAlarmStatus(String medicineName, String dosage) {
+        // Show a persistent alarm status in the UI
+        textNextReminder.setText("🔔 ALARM ACTIVE: " + medicineName + " (" + dosage + ")");
+        textNextReminder.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+        
+        // You can add more visual indicators here if needed
+        Toast.makeText(this, "⏰ " + medicineName + " alarm is active!", Toast.LENGTH_LONG).show();
+    }
+
+    private void initViews() {
+        try {
+            textMedicineCount = findViewById(R.id.text_medicine_count);
+            textNextReminder = findViewById(R.id.text_next_reminder);
+            textWelcome = findViewById(R.id.text_welcome);
+            imgUserProfile = findViewById(R.id.img_user_profile);
+            cardProfileImage = findViewById(R.id.card_profile_image);
+            
+            // Load and display user profile image
+            loadProfileImage();
+            
+            // Profile image click listener
+            if (cardProfileImage != null) {
+                cardProfileImage.setOnClickListener(v -> {
+                    try {
+                        Intent intent = new Intent(this, ProfileActivity.class);
+                        startActivity(intent);
+                    } catch (Exception e) {
+                        android.util.Log.e("MainActivity", "Error opening ProfileActivity", e);
+                    }
+                });
+            }
+        } catch (Exception e) {
+            android.util.Log.e("MainActivity", "Error in initViews", e);
+        }
+    }
+    
+    private void loadProfileImage() {
+        try {
+            String avatarType = prefs.getString("avatar_type", "custom");
+            String profileImageBase64 = prefs.getString("profile_image", "");
+            
+            if (imgUserProfile == null || cardProfileImage == null) {
+                return; // Views not initialized yet
+            }
+            
+            if (!profileImageBase64.isEmpty()) {
+                // Load custom photo
+                Bitmap bitmap = base64ToBitmap(profileImageBase64);
+                if (bitmap != null) {
+                    imgUserProfile.setImageBitmap(bitmap);
+                    cardProfileImage.setCardBackgroundColor(getResources().getColor(R.color.primary));
+                }
+            } else {
+                // Load avatar based on type
+                switch (avatarType) {
+                    case "male":
+                        imgUserProfile.setImageResource(R.drawable.ic_male);
+                        cardProfileImage.setCardBackgroundColor(0xFF2196F3); // Blue
+                        break;
+                    case "female":
+                        imgUserProfile.setImageResource(R.drawable.ic_female);
+                        cardProfileImage.setCardBackgroundColor(0xFFE91E63); // Pink
+                        break;
+                    default:
+                        imgUserProfile.setImageResource(R.drawable.ic_person);
+                        cardProfileImage.setCardBackgroundColor(0xFF9C27B0); // Purple
+                        break;
+                }
+            }
+        } catch (Exception e) {
+            android.util.Log.e("MainActivity", "Error loading profile image", e);
+        }
+    }
+    
     private Bitmap base64ToBitmap(String base64Str) {
-        byte[] decodedBytes = Base64.decode(base64Str, Base64.DEFAULT);
-        return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+        try {
+            if (base64Str == null || base64Str.isEmpty()) {
+                return null;
+            }
+            byte[] decodedBytes = Base64.decode(base64Str, Base64.DEFAULT);
+            return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+        } catch (Exception e) {
+            android.util.Log.e("MainActivity", "Error converting base64 to bitmap", e);
+            return null;
+        }
     }
 
     // Editable "Hello, User!"
@@ -174,65 +259,189 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void updateStats() {
-        int count = databaseHelper.getMedicineCount();
-        int adherenceRate = databaseHelper.getAdherenceRate();
-        int streak = databaseHelper.getCurrentStreak();
-        
-        if (count == 0) {
-            textMedicineCount.setText("No medicines added yet");
-            textNextReminder.setText("Add your first medicine to get started!");
-        } else {
-            // Show medicine count
-            String medicineText = count == 1 ? "1 medicine scheduled" : count + " medicines scheduled";
-            textMedicineCount.setText(medicineText);
-            
-            // Show adherence and streak
-            if (adherenceRate > 0 || streak > 0) {
-                String statsText = "";
-                if (adherenceRate > 0) {
-                    statsText += "📊 " + adherenceRate + "% adherence";
-                }
-                if (streak > 0) {
-                    if (!statsText.isEmpty()) statsText += " • ";
-                    statsText += "🔥 " + streak + " day streak";
-                }
-                textNextReminder.setText(statsText);
-            } else {
-                textNextReminder.setText("Stay consistent! 💪");
+        try {
+            if (databaseHelper == null) {
+                return;
             }
+            
+            int count = databaseHelper.getMedicineCount();
+            int adherenceRate = databaseHelper.getAdherenceRate();
+            int streak = databaseHelper.getCurrentStreak();
+            
+            if (textMedicineCount == null || textNextReminder == null) {
+                return; // Views not initialized yet
+            }
+            
+            if (count == 0) {
+                textMedicineCount.setText("No medicines added yet");
+                textNextReminder.setText("Add your first medicine to get started!");
+            } else {
+                // Show medicine count
+                String medicineText = count == 1 ? "1 medicine scheduled" : count + " medicines scheduled";
+                textMedicineCount.setText(medicineText);
+                
+                // Show adherence and streak
+                if (adherenceRate > 0 || streak > 0) {
+                    String statsText = "";
+                    if (adherenceRate > 0) {
+                        statsText += "📊 " + adherenceRate + "% adherence";
+                    }
+                    if (streak > 0) {
+                        if (!statsText.isEmpty()) statsText += " • ";
+                        statsText += "🔥 " + streak + " day streak";
+                    }
+                    textNextReminder.setText(statsText);
+                } else {
+                    textNextReminder.setText("Stay consistent! 💪");
+                }
+            }
+        } catch (Exception e) {
+            android.util.Log.e("MainActivity", "Error updating stats", e);
         }
     }
 
+    private void checkAndRequestPermissionsIfNeeded() {
+        boolean needsNotificationPermission = false;
+        boolean needsAlarmPermission = false;
+        
+        // Check notification permission (Android 13+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                needsNotificationPermission = true;
+            }
+        }
+        
+        // Check alarm permission (Android 12+)
+        AlarmScheduler scheduler = new AlarmScheduler(this);
+        if (!scheduler.canScheduleExactAlarms()) {
+            needsAlarmPermission = true;
+        }
+        
+        // Only show dialog if permissions are needed and not already shown this session
+        if ((needsNotificationPermission || needsAlarmPermission) && 
+            !prefs.getBoolean("permission_dialog_shown_this_session", false)) {
+            prefs.edit().putBoolean("permission_dialog_shown_this_session", true).apply();
+            requestNecessaryPermissions();
+        }
+    }
+    
     private void requestNecessaryPermissions() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Welcome to MedTrack! 💊");
-        builder.setMessage("To ensure your medicine reminders work perfectly, we need to:\n\n" +
-                "✅ Send notifications\n" +
-                "✅ Schedule exact alarms\n" +
-                "✅ Work even when app is closed\n\n" +
-                "Please allow these permissions in the next screens.");
-        builder.setPositiveButton("Continue", (dialog, which) -> {
-            // Request notification permission for Android 13+
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                        != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.POST_NOTIFICATIONS},
-                            NOTIFICATION_PERMISSION_CODE);
-                }
-            }
-            
-            // Request exact alarm permission
-            AlarmScheduler scheduler = new AlarmScheduler(this);
-            if (!scheduler.canScheduleExactAlarms()) {
-                scheduler.requestExactAlarmPermission();
-            }
-            
-            // Mark as requested
-            prefs.edit().putBoolean("permissions_requested", true).apply();
+        builder.setTitle("⏰ Allow Alarms & Notifications");
+        builder.setMessage("MedTrack needs permission to:\n\n" +
+                "📢 Send notifications for your medicine reminders\n" +
+                "⏰ Set alarms that work even when app is closed\n\n" +
+                "These permissions are required for the app to work properly.");
+        builder.setPositiveButton("Allow", (dialog, which) -> {
+            requestAllPermissions();
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> {
+            Toast.makeText(this, "⚠️ Permissions required for alarms to work", Toast.LENGTH_LONG).show();
         });
         builder.setCancelable(false);
         builder.show();
+    }
+    
+    private void requestAllPermissions() {
+        // Build list of permissions to request based on Android version
+        java.util.ArrayList<String> permissionsToRequest = new java.util.ArrayList<>();
+        
+        // Notification permission (Android 13+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
+        
+        // Request runtime permissions first
+        if (!permissionsToRequest.isEmpty()) {
+            ActivityCompat.requestPermissions(this,
+                    permissionsToRequest.toArray(new String[0]),
+                    NOTIFICATION_PERMISSION_CODE);
+        } else {
+            // If notification permission already granted or not needed, check alarm permission
+            checkAndRequestAlarmPermission();
+        }
+    }
+    
+    private void checkAndRequestAlarmPermission() {
+        // Request exact alarm permission (Android 12+) - requires special handling
+        AlarmScheduler scheduler = new AlarmScheduler(this);
+        if (!scheduler.canScheduleExactAlarms()) {
+            new AlertDialog.Builder(this)
+                    .setTitle("⏰ Allow Exact Alarms")
+                    .setMessage("Please enable 'Alarms & reminders' permission so your medicine alarms work even when the app is closed or your phone is locked.")
+                    .setPositiveButton("Open Settings", (d, w) -> {
+                        scheduler.requestExactAlarmPermission();
+                    })
+                    .setNegativeButton("Skip", (d, w) -> {
+                        Toast.makeText(this, "⚠️ Alarms may not work reliably without this permission", Toast.LENGTH_LONG).show();
+                    })
+                    .setCancelable(false)
+                    .show();
+        } else {
+            Toast.makeText(this, "✅ All permissions granted! Alarms will work perfectly.", Toast.LENGTH_LONG).show();
+        }
+    }
+    
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @androidx.annotation.NonNull String[] permissions,
+                                           @androidx.annotation.NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        
+        if (requestCode == NOTIFICATION_PERMISSION_CODE) {
+            boolean allGranted = true;
+            for (int result : grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    break;
+                }
+            }
+            
+            if (allGranted) {
+                Toast.makeText(this, "✅ Notification permission granted!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "⚠️ Notification permission denied. Alarms may not show.", Toast.LENGTH_LONG).show();
+            }
+            
+            // After notification permission, check alarm permission
+            checkAndRequestAlarmPermission();
+        }
+    }
+
+    /**
+     * Check if battery optimization is disabled for reliable alarms
+     */
+    private void checkBatteryOptimization() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+            String packageName = getPackageName();
+            
+            if (powerManager != null && !powerManager.isIgnoringBatteryOptimizations(packageName)) {
+                // Only show once per session
+                if (!prefs.getBoolean("battery_optimization_shown", false)) {
+                    new AlertDialog.Builder(this)
+                            .setTitle("Battery Optimization")
+                            .setMessage("To ensure alarms work reliably even when your phone is locked or in Doze mode, please disable battery optimization for MedTrack.\n\nThis allows alarms to ring at the exact scheduled time.")
+                            .setPositiveButton("Disable Optimization", (dialog, which) -> {
+                                try {
+                                    Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                                    intent.setData(Uri.parse("package:" + packageName));
+                                    startActivity(intent);
+                                } catch (Exception e) {
+                                    Toast.makeText(this, "Unable to open battery settings", Toast.LENGTH_SHORT).show();
+                                }
+                                prefs.edit().putBoolean("battery_optimization_shown", true).apply();
+                            })
+                            .setNegativeButton("Later", (dialog, which) -> {
+                                prefs.edit().putBoolean("battery_optimization_shown", true).apply();
+                            })
+                            .show();
+                }
+            }
+        }
     }
 
     @Override
@@ -244,5 +453,25 @@ public class MainActivity extends AppCompatActivity {
         // Update welcome name
         String username = prefs.getString("username", "User");
         textWelcome.setText("Hello, " + username + "!");
+        
+        // Reset session flag so permissions are checked again if user returns from settings
+        prefs.edit().putBoolean("permission_dialog_shown_this_session", false).apply();
+        
+        // Check permissions again in case user granted them in settings
+        checkAndRequestPermissionsIfNeeded();
+    }
+    
+    @Override
+    public void onBackPressed() {
+        // Check if alarm is active
+        Intent intent = getIntent();
+        if (intent != null && intent.getBooleanExtra("alarm_active", false)) {
+            // Don't allow back button during alarm - show message instead
+            Toast.makeText(this, "⏰ Alarm is active! Use notification buttons to stop.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // Normal back button behavior when no alarm
+        super.onBackPressed();
     }
 }

@@ -32,12 +32,18 @@ public class NotificationActionReceiver extends BroadcastReceiver {
         cancelAutoRepeat(context, medicineId);
 
         switch (action) {
-            case "ACTION_MARK_TAKEN":
-                markAsTaken(context, medicineId, medicineName);
+            case "ACTION_STOP":
+                // Stop alarm and move medicine to pending status
+                moveToPending(context, medicineId, medicineName);
                 break;
 
             case "ACTION_SNOOZE":
                 snoozeAlarm(context, medicineId, medicineName, dosage);
+                break;
+                
+            case "ACTION_TAKEN":
+                // Mark medicine as taken and remove from pending
+                markAsTaken(context, medicineId, medicineName);
                 break;
         }
 
@@ -47,6 +53,16 @@ public class NotificationActionReceiver extends BroadcastReceiver {
         if (notificationManager != null) {
             notificationManager.cancel(medicineId);
         }
+    }
+
+    private void moveToPending(Context context, int medicineId, String medicineName) {
+        // Move medicine to pending status (don't delete, just mark as pending)
+        // This will show in the pending medicines list
+        android.content.SharedPreferences prefs = context.getSharedPreferences("MedTrackPrefs", android.content.Context.MODE_PRIVATE);
+        String pendingKey = "pending_medicine_" + medicineId;
+        prefs.edit().putBoolean(pendingKey, true).apply();
+        
+        Toast.makeText(context, "⏸️ " + medicineName + " moved to pending", Toast.LENGTH_SHORT).show();
     }
 
     private void markAsTaken(Context context, int medicineId, String medicineName) {
@@ -61,6 +77,11 @@ public class NotificationActionReceiver extends BroadcastReceiver {
 
         // Delete from medicines table
         dbHelper.deleteMedicine(medicineId);
+        
+        // Remove from pending
+        android.content.SharedPreferences prefs = context.getSharedPreferences("MedTrackPrefs", android.content.Context.MODE_PRIVATE);
+        String pendingKey = "pending_medicine_" + medicineId;
+        prefs.edit().remove(pendingKey).apply();
 
         Toast.makeText(context, "✅ " + medicineName + " marked as taken!", Toast.LENGTH_SHORT).show();
     }

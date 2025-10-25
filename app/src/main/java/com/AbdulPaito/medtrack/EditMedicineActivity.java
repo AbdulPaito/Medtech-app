@@ -16,7 +16,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.textfield.TextInputEditText;
 import java.util.Calendar;
 
-public class AddMedicineActivity extends AppCompatActivity {
+public class EditMedicineActivity extends AppCompatActivity {
 
     private EditText editMedicineName;
     private EditText editDosage;
@@ -32,6 +32,8 @@ public class AddMedicineActivity extends AppCompatActivity {
     private Button btnSave;
     private Button btnCancel;
     private DatabaseHelper databaseHelper;
+    private Medicine medicine;
+    private int medicineId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,12 +41,15 @@ public class AddMedicineActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_medicine);
 
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Add Medicine");
+            getSupportActionBar().setTitle("Edit Medicine");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
         databaseHelper = new DatabaseHelper(this);
+        medicineId = getIntent().getIntExtra("MEDICINE_ID", -1);
+        
         initViews();
+        loadMedicineData();
         setupButtons();
         setupFrequencyListener();
     }
@@ -64,39 +69,64 @@ public class AddMedicineActivity extends AppCompatActivity {
         btnSave = findViewById(R.id.btn_save);
         btnCancel = findViewById(R.id.btn_cancel);
 
-        timePicker.setIs24HourView(false); // 12-hour format with AM/PM
-
-        // Open date picker when clicking on the date field
+        timePicker.setIs24HourView(false);
         editDate.setOnClickListener(v -> showDatePicker());
+        
+        // Change button text for editing
+        btnSave.setText("Update Medicine");
+    }
+
+    private void loadMedicineData() {
+        medicine = databaseHelper.getMedicineById(medicineId);
+        if (medicine != null) {
+            editMedicineName.setText(medicine.getMedicineName());
+            editDosage.setText(medicine.getDosage());
+            editInstructions.setText(medicine.getInstructions());
+            editDate.setText(medicine.getReminderDate());
+
+            // Set time
+            String[] timeParts = medicine.getReminderTime().split(":");
+            if (timeParts.length == 2) {
+                timePicker.setHour(Integer.parseInt(timeParts[0]));
+                timePicker.setMinute(Integer.parseInt(timeParts[1]));
+            }
+
+            // Set frequency
+            String frequency = medicine.getFrequency();
+            if (frequency.equals("Daily")) {
+                radioDaily.setChecked(true);
+            } else if (frequency.equals("Every 12 hours")) {
+                radio12Hours.setChecked(true);
+            } else {
+                radioCustom.setChecked(true);
+                layoutCustomFrequency.setVisibility(View.VISIBLE);
+                editCustomFrequency.setText(frequency);
+            }
+        }
     }
 
     private void setupButtons() {
-        btnSave.setOnClickListener(view -> saveMedicine());
+        btnSave.setOnClickListener(view -> updateMedicine());
         btnCancel.setOnClickListener(view -> finish());
     }
 
-    // ✅ NEW: Show/hide custom frequency input
     private void setupFrequencyListener() {
         radioGroupFrequency.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.radio_custom) {
-                // Show custom input when Custom is selected
                 layoutCustomFrequency.setVisibility(View.VISIBLE);
                 editCustomFrequency.requestFocus();
             } else {
-                // Hide custom input for Daily or Every 12 hours
                 layoutCustomFrequency.setVisibility(View.GONE);
             }
         });
     }
 
     private void showDatePicker() {
-        // Get current date
         final Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-        // Show DatePickerDialog
         DatePickerDialog datePickerDialog = new DatePickerDialog(
                 this,
                 (view, selectedYear, selectedMonth, selectedDay) -> {
@@ -110,8 +140,7 @@ public class AddMedicineActivity extends AppCompatActivity {
         datePickerDialog.show();
     }
 
-    // ✅ UPDATED: Handle custom frequency
-    private void saveMedicine() {
+    private void updateMedicine() {
         String medicineName = editMedicineName.getText().toString().trim();
         String dosage = editDosage.getText().toString().trim();
         String instructions = editInstructions.getText().toString().trim();
@@ -139,70 +168,40 @@ public class AddMedicineActivity extends AppCompatActivity {
         int minute = timePicker.getMinute();
         String reminderTime = String.format("%02d:%02d", hour, minute);
 
-        // ✅ Get frequency based on selection
         String frequency;
         if (radioDaily.isChecked()) {
             frequency = "Daily";
         } else if (radio12Hours.isChecked()) {
             frequency = "Every 12 hours";
         } else if (radioCustom.isChecked()) {
-            // Get custom frequency from input
             frequency = editCustomFrequency.getText().toString().trim();
-
             if (frequency.isEmpty()) {
                 editCustomFrequency.setError("Please enter custom frequency");
                 editCustomFrequency.requestFocus();
                 return;
             }
         } else {
-            frequency = "Daily"; // default
+            frequency = "Daily";
         }
 
-        Medicine medicine = new Medicine(
-                medicineName,
-                dosage,
-                instructions,
-                reminderTime,
-                selectedDate,
-                frequency
-        );
+        medicine.setMedicineName(medicineName);
+        medicine.setDosage(dosage);
+        medicine.setInstructions(instructions);
+        medicine.setReminderTime(reminderTime);
+        medicine.setReminderDate(selectedDate);
+        medicine.setFrequency(frequency);
 
-        try {
-            long id = databaseHelper.addMedicine(medicine);
+        int rowsAffected = databaseHelper.updateMedicine(medicine);
 
-            if (id > 0) {
-                medicine.setId((int) id);
+        if (rowsAffected > 0) {
+            AlarmScheduler alarmScheduler = new AlarmScheduler(this);
+            alarmScheduler.scheduleMedicineAlarm(medicine);
 
-                try {
-                    AlarmScheduler alarmScheduler = new AlarmScheduler(this);
-                    alarmScheduler.scheduleMedicineAlarm(medicine);
-                } catch (Exception e) {
-                    android.util.Log.e("AddMedicineActivity", "Error scheduling alarm", e);
-                    // Continue even if alarm scheduling fails
-                }
-
-                String displayTime = formatTime(hour, minute);
-                Toast.makeText(this,
-                        "Medicine added for " + selectedDate + " at " + displayTime + " (" + frequency + ")",
-                        Toast.LENGTH_LONG).show();
-                finish();
-            } else {
-                Toast.makeText(this, "Error adding medicine", Toast.LENGTH_SHORT).show();
-            }
-        } catch (Exception e) {
-            android.util.Log.e("AddMedicineActivity", "Error adding medicine", e);
-            Toast.makeText(this, "Error adding medicine: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Medicine updated successfully!", Toast.LENGTH_SHORT).show();
+            finish();
+        } else {
+            Toast.makeText(this, "Error updating medicine", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    /**
-     * Format time to 12-hour with AM/PM
-     */
-    private String formatTime(int hour, int minute) {
-        String amPm = hour >= 12 ? "PM" : "AM";
-        int displayHour = hour % 12;
-        if (displayHour == 0) displayHour = 12;
-        return String.format("%d:%02d %s", displayHour, minute, amPm);
     }
 
     @Override

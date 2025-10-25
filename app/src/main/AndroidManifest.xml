@@ -6,17 +6,23 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" 
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+    <uses-permission android:name="android.permission.TURN_SCREEN_ON" />
 
     <application
+        android:name=".MedTrackApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -25,15 +31,23 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MedTrack"
+        android:forceDarkAllowed="false"
         tools:targetApi="31">
 
         <activity
             android:name=".HistoryActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:forceDarkAllowed="false" />
+
+        <activity
+            android:name=".TestMainActivity"
+            android:exported="false"
+            android:forceDarkAllowed="false" />
 
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:forceDarkAllowed="false">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -42,24 +56,34 @@
 
         <activity
             android:name=".AddMedicineActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:forceDarkAllowed="false" />
 
         <activity
             android:name=".EditMedicineActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:forceDarkAllowed="false" />
 
         <activity
             android:name=".ReminderListActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:forceDarkAllowed="false" />
 
         <activity
             android:name=".SettingsActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:forceDarkAllowed="false" />
 
         <receiver
             android:name=".AlarmReceiver"
             android:enabled="true"
-            android:exported="false" />
+            android:exported="true"
+            android:directBootAware="true"
+            android:process=":alarm">
+            <intent-filter>
+                <action android:name="com.AbdulPaito.medtrack.ALARM_TRIGGER" />
+            </intent-filter>
+        </receiver>
 
         <receiver
             android:name=".NotificationActionReceiver"
@@ -72,22 +96,53 @@
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
 
+        <service
+            android:name=".BackgroundKeepAliveService"
+            android:enabled="true"
+            android:exported="false" />
+
         <activity
             android:name=".StatisticsActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:forceDarkAllowed="false" />
 
         <activity
             android:name=".ProfileActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:forceDarkAllowed="false" />
 
         <activity
             android:name=".CalendarActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:forceDarkAllowed="false" />
+
+        <activity
+            android:name=".ReminderDialogActivity"
+            android:exported="false"
+            android:forceDarkAllowed="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true" />
 
         <receiver
             android:name=".ReminderNotificationReceiver"
             android:enabled="true"
-            android:exported="false" />
+            android:exported="true"
+            android:directBootAware="true"
+            android:process=":reminder" />
+
+        <receiver
+            android:name=".BootReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
 
     </application>
 
