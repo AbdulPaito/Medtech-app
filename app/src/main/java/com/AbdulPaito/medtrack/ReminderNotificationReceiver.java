@@ -22,58 +22,87 @@ public class ReminderNotificationReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        if (context == null || intent == null) {
+            Log.e(TAG, "❌ Context or Intent is null!");
+            return;
+        }
+        
         long currentTime = System.currentTimeMillis();
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", java.util.Locale.getDefault());
         Log.d(TAG, "⏰ 5-MINUTE REMINDER RECEIVED! Time: " + sdf.format(new java.util.Date(currentTime)));
         
-        // Get medicine details
-        String medicineName = intent.getStringExtra("medicine_name");
-        String dosage = intent.getStringExtra("dosage");
-        int medicineId = intent.getIntExtra("medicine_id", 0);
-
-        Log.d(TAG, "💊 Reminder for: " + medicineName + ", ID: " + medicineId + ", Dosage: " + dosage);
-
-        if (medicineName == null || medicineId == 0) {
-            Log.e(TAG, "❌ Invalid reminder data received");
-            return;
-        }
-
-        // Acquire wake locks to ensure device wakes up
-        PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        PowerManager.WakeLock wakeLock = null;
-        
         try {
-            // Acquire wake lock to wake device
-            wakeLock = powerManager.newWakeLock(
-                    PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE,
-                    "MedTrack::ReminderWakeLock"
-            );
-            wakeLock.acquire(5 * 60 * 1000L); // Hold for 5 minutes
-            
-            Log.d(TAG, "✅ Reminder WakeLock acquired");
-            
-            // Show reminder notification
-            showReminderNotification(context, medicineName, dosage, medicineId);
-            
-            // Show popup dialog
-            showReminderDialog(context, medicineName, dosage);
-            
-            Log.d(TAG, "✅ 5-minute reminder processed successfully");
-            
-        } catch (Exception e) {
-            Log.e(TAG, "❌ Error processing reminder", e);
-        } finally {
-            // Release wake lock after delay
-            if (wakeLock != null && wakeLock.isHeld()) {
-                final PowerManager.WakeLock finalWakeLock = wakeLock;
-                android.os.Handler handler = new android.os.Handler(context.getMainLooper());
-                handler.postDelayed(() -> {
-                    if (finalWakeLock != null && finalWakeLock.isHeld()) {
-                        finalWakeLock.release();
-                        Log.d(TAG, "✅ Reminder WakeLock released");
-                    }
-                }, 3000); // Release after 3 seconds
+            // Get medicine details with null checks
+            String medicineName = intent.getStringExtra("medicine_name");
+            String dosage = intent.getStringExtra("dosage");
+            int medicineId = intent.getIntExtra("medicine_id", 0);
+
+            Log.d(TAG, "📊 Reminder for: " + medicineName + ", ID: " + medicineId + ", Dosage: " + dosage);
+
+            // Validate data
+            if (medicineName == null || medicineName.isEmpty()) {
+                Log.e(TAG, "❌ Medicine name is null or empty");
+                medicineName = "Your Medicine";
             }
+            if (dosage == null || dosage.isEmpty()) {
+                Log.e(TAG, "❌ Dosage is null or empty");
+                dosage = "1 dose";
+            }
+            if (medicineId == 0) {
+                Log.e(TAG, "❌ Invalid medicine ID: 0");
+                medicineId = 1;
+            }
+
+            // Acquire wake locks to ensure device wakes up
+            PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+            PowerManager.WakeLock wakeLock = null;
+            
+            if (powerManager == null) {
+                Log.e(TAG, "❌ PowerManager is null!");
+                return;
+            }
+            
+            try {
+                // Acquire wake lock to wake device
+                wakeLock = powerManager.newWakeLock(
+                        PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE,
+                        "MedTrack::ReminderWakeLock"
+                );
+                wakeLock.acquire(5 * 60 * 1000L); // Hold for 5 minutes
+                
+                Log.d(TAG, "✅ Reminder WakeLock acquired");
+                
+                // Show reminder notification
+                showReminderNotification(context, medicineName, dosage, medicineId);
+                
+                // Show popup dialog
+                showReminderDialog(context, medicineName, dosage);
+                
+                Log.d(TAG, "✅ 5-minute reminder processed successfully");
+                
+            } catch (Exception e) {
+                Log.e(TAG, "❌ Error processing reminder", e);
+                e.printStackTrace();
+            } finally {
+                // Release wake lock after delay
+                if (wakeLock != null && wakeLock.isHeld()) {
+                    final PowerManager.WakeLock finalWakeLock = wakeLock;
+                    android.os.Handler handler = new android.os.Handler(context.getMainLooper());
+                    handler.postDelayed(() -> {
+                        try {
+                            if (finalWakeLock != null && finalWakeLock.isHeld()) {
+                                finalWakeLock.release();
+                                Log.d(TAG, "✅ Reminder WakeLock released");
+                            }
+                        } catch (Exception ex) {
+                            Log.e(TAG, "❌ Error releasing wake lock", ex);
+                        }
+                    }, 3000); // Release after 3 seconds
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "❌ CRITICAL ERROR in ReminderNotificationReceiver", e);
+            e.printStackTrace();
         }
     }
     
