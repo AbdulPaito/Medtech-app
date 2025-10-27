@@ -9,6 +9,7 @@ import android.util.Log;
 import android.widget.Toast;
 import com.AbdulPaito.medtrack.database.Medicine;
 import java.util.Calendar;
+import android.provider.Settings;
 
 /**
  * AlarmScheduler - Completely rewritten for reliable alarm scheduling
@@ -29,6 +30,13 @@ public class AlarmScheduler {
      */
     public void scheduleMedicineAlarm(Medicine medicine) {
         Log.d(TAG, "🚀 Starting NEW alarm scheduling for: " + medicine.getMedicineName());
+        
+        // Check if we can schedule exact alarms
+        if (!canScheduleExactAlarms()) {
+            Toast.makeText(context, "❌ ALARM PERMISSION NOT GRANTED! Please enable 'Alarms & reminders' in settings.", Toast.LENGTH_LONG).show();
+            Log.e(TAG, "❌ Cannot schedule exact alarms - permission not granted!");
+            return;
+        }
         
         // Parse time (format: "HH:mm")
         String[] timeParts = medicine.getReminderTime().split(":");
@@ -69,14 +77,17 @@ public class AlarmScheduler {
             if (minutesDifference >= 6) { // At least 6 minutes to allow 5-minute reminder
                 schedule5MinuteReminder(medicine, alarmTime);
                 Log.d(TAG, "✅ 5-minute reminder scheduled");
+                Toast.makeText(context, "✅ 5-min reminder scheduled for " + sdf.format(new java.util.Date(alarmTime - (5 * 60 * 1000))), Toast.LENGTH_LONG).show();
             } else {
                 Log.d(TAG, "⚠️ Not enough time for 5-minute reminder (only " + minutesDifference + " minutes)");
+                Toast.makeText(context, "⚠️ Alarm too soon - no 5-min reminder (only " + minutesDifference + " min away)", Toast.LENGTH_LONG).show();
             }
             
             // Schedule main alarm
             scheduleMainAlarm(medicine, alarmTime);
             
             Log.d(TAG, "✅ All alarms scheduled successfully for: " + medicine.getMedicineName());
+            Toast.makeText(context, "✅ Alarm set for " + medicine.getReminderTime(), Toast.LENGTH_SHORT).show();
         } else {
             Log.e(TAG, "❌ AlarmManager is null!");
         }
@@ -115,7 +126,7 @@ public class AlarmScheduler {
                     reminderTime,
                     pendingIntent
             );
-            Log.d(TAG, "✅ 5-minute reminder scheduled with setExactAndAllowWhileIdle");
+            Log.d(TAG, "✅ 5-minute reminder scheduled with setExactAndAllowWhileIdle at " + sdf.format(new java.util.Date(reminderTime)));
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             alarmManager.setExact(
                     AlarmManager.RTC_WAKEUP,

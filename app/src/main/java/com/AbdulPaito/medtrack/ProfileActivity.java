@@ -22,12 +22,15 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
+import com.yalantis.ucrop.UCrop;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.InputStream;
 
 public class ProfileActivity extends AppCompatActivity {
@@ -45,6 +48,7 @@ public class ProfileActivity extends AppCompatActivity {
     
     private ActivityResultLauncher<Intent> imagePickerLauncher;
     private ActivityResultLauncher<Intent> cameraLauncher;
+    private Uri tempCameraImageUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,25 +89,8 @@ public class ProfileActivity extends AppCompatActivity {
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Uri imageUri = result.getData().getData();
-                        try {
-                            InputStream inputStream = getContentResolver().openInputStream(imageUri);
-                            if (inputStream != null) {
-                                Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                                if (bitmap != null) {
-                                    imgProfile.setImageBitmap(bitmap);
-                                    profileImageBase64 = bitmapToBase64(bitmap);
-                                    selectedAvatarType = "photo";
-                                    updateAvatarSelection();
-                                    Toast.makeText(this, "Image loaded successfully!", Toast.LENGTH_SHORT).show();
-                                } else {
-                                    Toast.makeText(this, "Failed to decode image", Toast.LENGTH_SHORT).show();
-                                }
-                                inputStream.close();
-                            } else {
-                                Toast.makeText(this, "Failed to open image", Toast.LENGTH_SHORT).show();
-                            }
-                        } catch (Exception e) {
-                            Toast.makeText(this, "Failed to load image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        if (imageUri != null) {
+                            startCropActivity(imageUri);
                         }
                     }
                 });
@@ -112,19 +99,45 @@ public class ProfileActivity extends AppCompatActivity {
         cameraLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
-                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        Bitmap photo = (Bitmap) result.getData().getExtras().get("data");
-                        if (photo != null) {
-                            imgProfile.setImageBitmap(photo);
-                            profileImageBase64 = bitmapToBase64(photo);
-                            selectedAvatarType = "photo";
-                            updateAvatarSelection();
-                            Toast.makeText(this, "Photo captured successfully!", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(this, "Failed to capture photo", Toast.LENGTH_SHORT).show();
+                    if (result.getResultCode() == RESULT_OK) {
+                        if (tempCameraImageUri != null) {
+                            startCropActivity(tempCameraImageUri);
                         }
                     }
                 });
+    }
+    
+    /**
+     * Start UCrop activity for circular image cropping
+     */
+    private void startCropActivity(Uri sourceUri) {
+        try {
+            String destinationFileName = "cropped_profile_" + System.currentTimeMillis() + ".jpg";
+            File destinationFile = new File(getCacheDir(), destinationFileName);
+            Uri destinationUri = Uri.fromFile(destinationFile);
+            
+            UCrop.Options options = new UCrop.Options();
+            options.setCircleDimmedLayer(true); // Circular crop overlay
+            options.setShowCropGrid(false);
+            options.setShowCropFrame(false);
+            options.setCompressionQuality(95); // Higher quality
+            options.setMaxBitmapSize(2000); // Larger max size for better quality
+            options.setToolbarTitle("Crop Profile Picture");
+            options.setStatusBarColor(getResources().getColor(R.color.primary, null));
+            options.setToolbarColor(getResources().getColor(R.color.primary, null));
+            options.setToolbarWidgetColor(getResources().getColor(android.R.color.white, null));
+            options.setFreeStyleCropEnabled(false); // Lock to circle
+            options.setHideBottomControls(false);
+            options.setCropGridStrokeWidth(2);
+            
+            UCrop.of(sourceUri, destinationUri)
+                    .withAspectRatio(1, 1) // Square aspect ratio for perfect circle
+                    .withMaxResultSize(1000, 1000) // Good size for display
+                    .withOptions(options)
+                    .start(this);
+        } catch (Exception e) {
+            Toast.makeText(this, "Failed to start crop: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void setupListeners() {
@@ -210,8 +223,17 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void openCamera() {
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        cameraLauncher.launch(cameraIntent);
+        try {
+            Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            String fileName = "camera_photo_" + System.currentTimeMillis() + ".jpg";
+            File photoFile = new File(getCacheDir(), fileName);
+            tempCameraImageUri = FileProvider.getUriForFile(this, 
+                    getApplicationContext().getPackageName() + ".fileprovider", photoFile);
+            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, tempCameraImageUri);
+            cameraLauncher.launch(cameraIntent);
+        } catch (Exception e) {
+            Toast.makeText(this, "Failed to open camera: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void openGallery() {
@@ -318,20 +340,28 @@ public class ProfileActivity extends AppCompatActivity {
 
     private String bitmapToBase64(Bitmap bitmap) {
         try {
-            // Resize bitmap to reduce memory usage
-            int maxSize = 512; // Maximum dimension
-            int width = bitmap.getWidth();
-            int height = bitmap.getHeight();
+            // Create circular cropped bitmap
+            int size = Math.min(bitmap.getWidth(), bitmap.getHeight());
+            Bitmap circularBitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+            android.graphics.Canvas canvas = new android.graphics.Canvas(circularBitmap);
             
-            if (width > maxSize || height > maxSize) {
-                float ratio = Math.min((float) maxSize / width, (float) maxSize / height);
-                int newWidth = Math.round(width * ratio);
-                int newHeight = Math.round(height * ratio);
-                bitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+            android.graphics.Paint paint = new android.graphics.Paint();
+            paint.setAntiAlias(true);
+            android.graphics.BitmapShader shader = new android.graphics.BitmapShader(bitmap, 
+                    android.graphics.Shader.TileMode.CLAMP, android.graphics.Shader.TileMode.CLAMP);
+            paint.setShader(shader);
+            
+            float radius = size / 2f;
+            canvas.drawCircle(radius, radius, radius, paint);
+            
+            // Resize to optimal size
+            int maxSize = 600;
+            if (size > maxSize) {
+                circularBitmap = Bitmap.createScaledBitmap(circularBitmap, maxSize, maxSize, true);
             }
             
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream); // Use JPEG for smaller size
+            circularBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream); // PNG for transparency
             byte[] byteArray = byteArrayOutputStream.toByteArray();
             return Base64.encodeToString(byteArray, Base64.DEFAULT);
         } catch (Exception e) {
@@ -362,6 +392,37 @@ public class ProfileActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(this, "Storage permission is required to select photos", Toast.LENGTH_SHORT).show();
             }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        
+        if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
+            final Uri resultUri = UCrop.getOutput(data);
+            if (resultUri != null) {
+                try {
+                    InputStream inputStream = getContentResolver().openInputStream(resultUri);
+                    if (inputStream != null) {
+                        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                        if (bitmap != null) {
+                            imgProfile.setImageBitmap(bitmap);
+                            profileImageBase64 = bitmapToBase64(bitmap);
+                            selectedAvatarType = "photo";
+                            updateAvatarSelection();
+                            Toast.makeText(this, "Profile picture updated! 📷", Toast.LENGTH_SHORT).show();
+                        }
+                        inputStream.close();
+                    }
+                } catch (Exception e) {
+                    Toast.makeText(this, "Failed to load cropped image", Toast.LENGTH_SHORT).show();
+                }
+            }
+        } else if (resultCode == UCrop.RESULT_ERROR) {
+            final Throwable cropError = UCrop.getError(data);
+            Toast.makeText(this, "Crop error: " + (cropError != null ? cropError.getMessage() : "Unknown"), 
+                    Toast.LENGTH_SHORT).show();
         }
     }
 

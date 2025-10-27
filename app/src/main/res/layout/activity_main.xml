@@ -43,16 +43,15 @@
                     
                     <FrameLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/gradient_card_primary">
+                        android:layout_height="match_parent">
                         
                         <ImageView
                             android:id="@+id/img_user_profile"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:src="@drawable/ic_person"
-                            android:scaleType="centerInside"
-                            android:padding="10dp" />
+                            android:scaleType="fitXY"
+                            android:adjustViewBounds="true" />
                     </FrameLayout>
                 </com.google.android.material.card.MaterialCardView>
 

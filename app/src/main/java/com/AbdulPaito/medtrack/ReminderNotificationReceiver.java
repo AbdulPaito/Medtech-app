@@ -85,11 +85,15 @@ public class ReminderNotificationReceiver extends BroadcastReceiver {
             Intent dialogIntent = new Intent(context, ReminderDialogActivity.class);
             dialogIntent.putExtra("medicine_name", medicineName);
             dialogIntent.putExtra("dosage", dosage);
-            dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            // Critical flags for lock screen - add FLAG_ACTIVITY_NO_USER_ACTION
+            dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK 
+                    | Intent.FLAG_ACTIVITY_NO_USER_ACTION
+                    | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
             context.startActivity(dialogIntent);
-            Log.d(TAG, "✅ Reminder dialog shown");
+            Log.d(TAG, "✅ Reminder dialog started");
         } catch (Exception e) {
             Log.e(TAG, "❌ Failed to show reminder dialog", e);
+            e.printStackTrace();
         }
     }
 
@@ -124,33 +128,48 @@ public class ReminderNotificationReceiver extends BroadcastReceiver {
             notificationManager.createNotificationChannel(channel);
         }
 
-        // Intent to open app when notification is tapped
-        Intent openAppIntent = new Intent(context, MainActivity.class);
-        openAppIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(
+        // Intent to open ReminderDialogActivity when notification is tapped
+        Intent dialogIntent = new Intent(context, ReminderDialogActivity.class);
+        dialogIntent.putExtra("medicine_name", medicineName);
+        dialogIntent.putExtra("dosage", dosage);
+        dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+        
+        PendingIntent fullScreenIntent = PendingIntent.getActivity(
                 context,
-                medicineId + 10000, // Unique request code
+                medicineId + 10000,
+                dialogIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+        
+        // Intent for tap action
+        Intent openAppIntent = new Intent(context, MainActivity.class);
+        openAppIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        PendingIntent contentIntent = PendingIntent.getActivity(
+                context,
+                medicineId + 10001,
                 openAppIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
-        // Build notification
+        // Build notification with FULL SCREEN INTENT for lock screen wake
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setContentTitle("⏰ Upcoming Medicine Reminder")
                 .setContentText(medicineName + " (" + dosage + ") - in 5 minutes!")
                 .setStyle(new NotificationCompat.BigTextStyle()
                         .bigText("Don't forget! Your medicine " + medicineName + " (" + dosage + ") is due in exactly 5 minutes."))
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setCategory(NotificationCompat.CATEGORY_REMINDER)
+                .setPriority(NotificationCompat.PRIORITY_MAX) // Changed to MAX
+                .setCategory(NotificationCompat.CATEGORY_ALARM) // Changed to ALARM
                 .setAutoCancel(true)
-                .setContentIntent(pendingIntent)
+                .setContentIntent(contentIntent)
+                .setFullScreenIntent(fullScreenIntent, true) // CRITICAL for lock screen
                 .setVibrate(new long[]{0, 500, 200, 500})
                 .setLights(0xFF00FF00, 1000, 1000) // Green light
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .setWhen(System.currentTimeMillis())
                 .setShowWhen(true)
+                .setOngoing(false)
                 .setTimeoutAfter(300000); // Auto-dismiss after 5 minutes
 
         // Show notification

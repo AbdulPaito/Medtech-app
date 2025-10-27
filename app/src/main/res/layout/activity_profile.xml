@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="16dp">
 
         <!-- Profile Header -->
         <TextView
@@ -35,24 +35,27 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="24dp"
+                android:padding="20dp"
                 android:gravity="center">
 
                 <!-- Profile Image -->
                 <com.google.android.material.card.MaterialCardView
-                    android:layout_width="120dp"
-                    android:layout_height="120dp"
-                    app:cardCornerRadius="60dp"
-                    app:cardElevation="4dp"
-                    android:layout_marginBottom="16dp">
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    app:cardCornerRadius="75dp"
+                    app:cardElevation="8dp"
+                    android:layout_marginBottom="16dp"
+                    app:strokeWidth="4dp"
+                    app:strokeColor="#FFFFFF">
 
                     <ImageView
                         android:id="@+id/img_profile"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:src="@drawable/ic_person"
-                        android:scaleType="centerCrop"
-                        android:background="@color/primary" />
+                        android:scaleType="fitXY"
+                        android:adjustViewBounds="true"
+                        android:background="#4F46E5" />
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- Change Picture Button -->
@@ -80,16 +83,19 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:weightSum="3">
 
                     <!-- Male Avatar -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/card_male_avatar"
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
-                        app:cardCornerRadius="40dp"
-                        app:cardElevation="4dp"
-                        android:layout_margin="8dp"
+                        android:layout_width="0dp"
+                        android:layout_height="75dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="4dp"
+                        app:cardCornerRadius="37.5dp"
+                        app:cardElevation="6dp"
                         app:strokeWidth="3dp"
                         app:strokeColor="@android:color/transparent">
 
@@ -98,17 +104,19 @@
                             android:layout_height="match_parent"
                             android:src="@drawable/ic_male"
                             android:padding="16dp"
-                            android:background="#2196F3" />
+                            android:background="#3B82F6" />
                     </com.google.android.material.card.MaterialCardView>
 
                     <!-- Female Avatar -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/card_female_avatar"
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
-                        app:cardCornerRadius="40dp"
-                        app:cardElevation="4dp"
-                        android:layout_margin="8dp"
+                        android:layout_width="0dp"
+                        android:layout_height="75dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="4dp"
+                        app:cardCornerRadius="37.5dp"
+                        app:cardElevation="6dp"
                         app:strokeWidth="3dp"
                         app:strokeColor="@android:color/transparent">
 
@@ -117,17 +125,19 @@
                             android:layout_height="match_parent"
                             android:src="@drawable/ic_female"
                             android:padding="16dp"
-                            android:background="#E91E63" />
+                            android:background="#EC4899" />
                     </com.google.android.material.card.MaterialCardView>
 
                     <!-- Custom Avatar -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/card_custom_avatar"
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
-                        app:cardCornerRadius="40dp"
-                        app:cardElevation="4dp"
-                        android:layout_margin="8dp"
+                        android:layout_width="0dp"
+                        android:layout_height="75dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="4dp"
+                        app:cardCornerRadius="37.5dp"
+                        app:cardElevation="6dp"
                         app:strokeWidth="3dp"
                         app:strokeColor="@android:color/transparent">
 
@@ -136,7 +146,7 @@
                             android:layout_height="match_parent"
                             android:src="@drawable/ic_person"
                             android:padding="16dp"
-                            android:background="#9C27B0" />
+                            android:background="#8B5CF6" />
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
             </LinearLayout>

@@ -1,6 +1,8 @@
 package com.AbdulPaito.medtrack;
 
 import android.Manifest;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -154,7 +156,9 @@ public class MainActivity extends AppCompatActivity {
                 Bitmap bitmap = base64ToBitmap(profileImageBase64);
                 if (bitmap != null) {
                     imgUserProfile.setImageBitmap(bitmap);
-                    cardProfileImage.setCardBackgroundColor(getResources().getColor(R.color.primary));
+                    imgUserProfile.setScaleType(android.widget.ImageView.ScaleType.FIT_XY);
+                    // Set card background to solid color for circular image
+                    cardProfileImage.setCardBackgroundColor(0xFF4F46E5); // Indigo background
                 }
             } else {
                 // Load avatar based on type
@@ -303,12 +307,21 @@ public class MainActivity extends AppCompatActivity {
     private void checkAndRequestPermissionsIfNeeded() {
         boolean needsNotificationPermission = false;
         boolean needsAlarmPermission = false;
+        boolean needsFullScreenPermission = false;
         
         // Check notification permission (Android 13+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
                 needsNotificationPermission = true;
+            }
+        }
+        
+        // Check full screen intent permission (Android 14+ / API 34+)
+        if (Build.VERSION.SDK_INT >= 34) {
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            if (notificationManager != null && !notificationManager.canUseFullScreenIntent()) {
+                needsFullScreenPermission = true;
             }
         }
         
@@ -319,7 +332,7 @@ public class MainActivity extends AppCompatActivity {
         }
         
         // Only show dialog if permissions are needed and not already shown this session
-        if ((needsNotificationPermission || needsAlarmPermission) && 
+        if ((needsNotificationPermission || needsAlarmPermission || needsFullScreenPermission) && 
             !prefs.getBoolean("permission_dialog_shown_this_session", false)) {
             prefs.edit().putBoolean("permission_dialog_shown_this_session", true).apply();
             requestNecessaryPermissions();
@@ -331,13 +344,14 @@ public class MainActivity extends AppCompatActivity {
         builder.setTitle("⏰ Allow Alarms & Notifications");
         builder.setMessage("MedTrack needs permission to:\n\n" +
                 "📢 Send notifications for your medicine reminders\n" +
-                "⏰ Set alarms that work even when app is closed\n\n" +
+                "⏰ Set alarms that work even when app is closed\n" +
+                "🔓 Wake phone screen when alarms ring (even on lock screen)\n\n" +
                 "These permissions are required for the app to work properly.");
         builder.setPositiveButton("Allow", (dialog, which) -> {
             requestAllPermissions();
         });
         builder.setNegativeButton("Cancel", (dialog, which) -> {
-            Toast.makeText(this, "⚠️ Permissions required for alarms to work", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "⚠️ Permissions required for alarms to work on lock screen", Toast.LENGTH_LONG).show();
         });
         builder.setCancelable(false);
         builder.show();
@@ -375,12 +389,48 @@ public class MainActivity extends AppCompatActivity {
                     .setMessage("Please enable 'Alarms & reminders' permission so your medicine alarms work even when the app is closed or your phone is locked.")
                     .setPositiveButton("Open Settings", (d, w) -> {
                         scheduler.requestExactAlarmPermission();
+                        // After alarm permission, check full screen intent
+                        checkAndRequestFullScreenIntent();
                     })
                     .setNegativeButton("Skip", (d, w) -> {
                         Toast.makeText(this, "⚠️ Alarms may not work reliably without this permission", Toast.LENGTH_LONG).show();
+                        // Still check full screen intent even if skipped
+                        checkAndRequestFullScreenIntent();
                     })
                     .setCancelable(false)
                     .show();
+        } else {
+            // Check full screen intent permission
+            checkAndRequestFullScreenIntent();
+        }
+    }
+    
+    private void checkAndRequestFullScreenIntent() {
+        // Check full screen intent permission (Android 14+)
+        if (Build.VERSION.SDK_INT >= 34) {
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            if (notificationManager != null && !notificationManager.canUseFullScreenIntent()) {
+                new AlertDialog.Builder(this)
+                        .setTitle("🔓 Allow Lock Screen Alarms")
+                        .setMessage("To wake your phone and show alarms on the lock screen, please enable 'Display over other apps' permission.\n\nThis ensures you never miss a medicine reminder!")
+                        .setPositiveButton("Open Settings", (d, w) -> {
+                            try {
+                                Intent intent = new Intent(android.provider.Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT);
+                                intent.setData(Uri.parse("package:" + getPackageName()));
+                                startActivity(intent);
+                                Toast.makeText(this, "✅ Enable 'Use full screen intent' to wake phone for alarms", Toast.LENGTH_LONG).show();
+                            } catch (Exception e) {
+                                Toast.makeText(this, "Please enable full screen intent in app settings", Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                        .setNegativeButton("Skip", (d, w) -> {
+                            Toast.makeText(this, "⚠️ Alarms may not wake phone on lock screen", Toast.LENGTH_LONG).show();
+                        })
+                        .setCancelable(false)
+                        .show();
+            } else {
+                Toast.makeText(this, "✅ All permissions granted! Alarms will work perfectly on lock screen.", Toast.LENGTH_LONG).show();
+            }
         } else {
             Toast.makeText(this, "✅ All permissions granted! Alarms will work perfectly.", Toast.LENGTH_LONG).show();
         }

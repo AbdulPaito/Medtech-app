@@ -20,6 +20,8 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
     <uses-permission android:name="android.permission.TURN_SCREEN_ON" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
     <application
         android:name=".MedTrackApplication"
@@ -47,7 +49,9 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:forceDarkAllowed="false">
+            android:forceDarkAllowed="false"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -111,6 +115,13 @@
             android:exported="false"
             android:forceDarkAllowed="false" />
 
+        <!-- UCrop Activity for Image Cropping -->
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+
         <activity
             android:name=".CalendarActivity"
             android:exported="false"
@@ -131,7 +142,11 @@
             android:enabled="true"
             android:exported="true"
             android:directBootAware="true"
-            android:process=":reminder" />
+            android:process=":reminder">
+            <intent-filter>
+                <action android:name="com.AbdulPaito.medtrack.REMINDER_TRIGGER" />
+            </intent-filter>
+        </receiver>
 
         <receiver
             android:name=".BootReceiver"
@@ -143,6 +158,17 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
+
+        <!-- FileProvider for image cropping -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_provider_paths" />
+        </provider>
 
     </application>
 

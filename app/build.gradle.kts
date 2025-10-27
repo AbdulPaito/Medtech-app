@@ -61,6 +61,12 @@ dependencies {
     implementation("androidx.activity:activity:1.9.2")
     implementation("androidx.lifecycle:lifecycle-runtime:2.8.5")
 
+    // ✅ Image Cropping Library
+    implementation("com.github.yalantis:ucrop:2.2.8")
+    
+    // ✅ Glide for Image Loading
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+
     // ✅ Tests
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
