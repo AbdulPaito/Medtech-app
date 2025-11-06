@@ -74,6 +74,10 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.Medici
                                 medicine.getReminderTime(),
                                 "Taken");
 
+                        // CRITICAL FIX: Cancel alarms before deleting medicine
+                        AlarmScheduler alarmScheduler = new AlarmScheduler(context);
+                        alarmScheduler.cancelMedicineAlarm(medicine.getId());
+
                         dbHelper.deleteMedicine(medicine.getId());
 
                         int pos = holder.getAdapterPosition();
@@ -99,6 +103,10 @@ public class MedicineAdapter extends RecyclerView.Adapter<MedicineAdapter.Medici
                         dbHelper.addHistory(medicine.getMedicineName(),
                                 medicine.getReminderTime(),
                                 "Missed");
+
+                        // CRITICAL FIX: Cancel alarms before deleting medicine
+                        AlarmScheduler alarmScheduler = new AlarmScheduler(context);
+                        alarmScheduler.cancelMedicineAlarm(medicine.getId());
 
                         dbHelper.deleteMedicine(medicine.getId());
 

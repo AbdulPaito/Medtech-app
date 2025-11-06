@@ -8,7 +8,9 @@ import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 import com.AbdulPaito.medtrack.database.Medicine;
+import com.AbdulPaito.medtrack.database.DatabaseHelper;
 import java.util.Calendar;
+import java.util.List;
 import android.provider.Settings;
 
 /**
@@ -94,7 +96,7 @@ public class AlarmScheduler {
     }
     
     /**
-     * Schedule 5-minute reminder - NEW IMPLEMENTATION
+     * Schedule 5-minute reminder - FIXED FOR EXACT TIMING
      */
     private void schedule5MinuteReminder(Medicine medicine, long alarmTime) {
         // Calculate exactly 5 minutes before
@@ -119,14 +121,15 @@ public class AlarmScheduler {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
         
-        // Schedule with highest precision
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
+        // CRITICAL FIX: Use setAlarmClock for highest priority and exact timing
+        // This bypasses Doze mode and battery optimization completely
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            AlarmManager.AlarmClockInfo alarmClockInfo = new AlarmManager.AlarmClockInfo(
                     reminderTime,
                     pendingIntent
             );
-            Log.d(TAG, "✅ 5-minute reminder scheduled with setExactAndAllowWhileIdle at " + sdf.format(new java.util.Date(reminderTime)));
+            alarmManager.setAlarmClock(alarmClockInfo, pendingIntent);
+            Log.d(TAG, "✅ 5-minute reminder scheduled with setAlarmClock (HIGHEST PRIORITY) at " + sdf.format(new java.util.Date(reminderTime)));
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             alarmManager.setExact(
                     AlarmManager.RTC_WAKEUP,
@@ -145,9 +148,12 @@ public class AlarmScheduler {
     }
     
     /**
-     * Schedule main alarm - NEW IMPLEMENTATION
+     * Schedule main alarm - FIXED FOR EXACT TIMING
      */
     private void scheduleMainAlarm(Medicine medicine, long alarmTime) {
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", java.util.Locale.getDefault());
+        Log.d(TAG, "⏰ SCHEDULING MAIN ALARM FOR: " + sdf.format(new java.util.Date(alarmTime)));
+        
         Intent intent = new Intent(context, AlarmReceiver.class);
         intent.setAction("com.AbdulPaito.medtrack.ALARM_TRIGGER");
         intent.putExtra("medicine_id", medicine.getId());
@@ -161,14 +167,15 @@ public class AlarmScheduler {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
         
-        // Schedule with highest precision
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
+        // CRITICAL FIX: Use setAlarmClock for main alarm to ensure exact timing
+        // This is the highest priority alarm method and bypasses all battery optimizations
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            AlarmManager.AlarmClockInfo alarmClockInfo = new AlarmManager.AlarmClockInfo(
                     alarmTime,
                     pendingIntent
             );
-            Log.d(TAG, "✅ Main alarm scheduled with setExactAndAllowWhileIdle");
+            alarmManager.setAlarmClock(alarmClockInfo, pendingIntent);
+            Log.d(TAG, "✅ Main alarm scheduled with setAlarmClock (HIGHEST PRIORITY) at " + sdf.format(new java.util.Date(alarmTime)));
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             alarmManager.setExact(
                     AlarmManager.RTC_WAKEUP,
@@ -193,6 +200,19 @@ public class AlarmScheduler {
         Log.d(TAG, "🗑️ Cancelling all alarms for medicine ID: " + medicineId);
         cancelAllAlarmsForMedicine(medicineId);
         Log.d(TAG, "✅ All alarms cancelled for medicine ID: " + medicineId);
+    }
+    
+    /**
+     * Cancel all alarms for all medicines - for bulk operations like restore
+     */
+    public void cancelAllAlarms(Context context) {
+        Log.d(TAG, "🗑️ Cancelling all alarms for all medicines");
+        DatabaseHelper dbHelper = new DatabaseHelper(context);
+        List<Medicine> allMedicines = dbHelper.getAllMedicines();
+        for (Medicine medicine : allMedicines) {
+            cancelAllAlarmsForMedicine(medicine.getId());
+        }
+        Log.d(TAG, "✅ All alarms cancelled for all medicines");
     }
     
     /**

@@ -133,6 +133,10 @@ public class ReminderListActivity extends AppCompatActivity {
                                     .setTitle("Delete Medicine")
                                     .setMessage("Are you sure you want to delete " + deletedMedicine.getMedicineName() + "?")
                                     .setPositiveButton("Delete", (dialog, which) -> {
+                                        // CRITICAL FIX: Cancel alarms before deleting medicine
+                                        AlarmScheduler alarmScheduler = new AlarmScheduler(ReminderListActivity.this);
+                                        alarmScheduler.cancelMedicineAlarm(deletedMedicine.getId());
+
                                         // Delete from DB and remove from list
                                         databaseHelper.deleteMedicine(deletedMedicine.getId());
                                         medicineList.remove(position);
@@ -145,6 +149,10 @@ public class ReminderListActivity extends AppCompatActivity {
                                                     databaseHelper.addMedicine(deletedMedicine);
                                                     medicineList.add(position, deletedMedicine);
                                                     adapter.notifyItemInserted(position);
+                                                    
+                                                    // Reschedule alarms for restored medicine
+                                                    AlarmScheduler restoreScheduler = new AlarmScheduler(ReminderListActivity.this);
+                                                    restoreScheduler.scheduleMedicineAlarm(deletedMedicine);
                                                 })
                                                 .show();
 
@@ -182,6 +190,10 @@ public class ReminderListActivity extends AppCompatActivity {
                 .setTitle("Delete Medicine")
                 .setMessage("Are you sure you want to delete " + medicine.getMedicineName() + "?")
                 .setPositiveButton("Delete", (dialog, which) -> {
+                    // CRITICAL FIX: Cancel alarms before deleting medicine
+                    AlarmScheduler alarmScheduler = new AlarmScheduler(this);
+                    alarmScheduler.cancelMedicineAlarm(medicine.getId());
+
                     databaseHelper.deleteMedicine(medicine.getId());
                     medicineList.remove(position);
                     adapter.notifyItemRemoved(position);

@@ -75,6 +75,10 @@ public class NotificationActionReceiver extends BroadcastReceiver {
         // Add to history as "Taken"
         dbHelper.addHistory(medicineName, currentTime, "Taken");
 
+        // CRITICAL FIX: Cancel alarms before deleting medicine
+        AlarmScheduler alarmScheduler = new AlarmScheduler(context);
+        alarmScheduler.cancelMedicineAlarm(medicineId);
+
         // Delete from medicines table
         dbHelper.deleteMedicine(medicineId);
         

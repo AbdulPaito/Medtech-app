@@ -284,6 +284,10 @@ public class SettingsActivity extends AppCompatActivity {
                     JSONObject backup = new JSONObject(jsonString.toString());
                     DatabaseHelper db = new DatabaseHelper(this);
                     
+                    // CRITICAL FIX: Cancel all alarms before clearing data
+                    AlarmScheduler alarmScheduler = new AlarmScheduler(this);
+                    alarmScheduler.cancelAllAlarms(this);
+                    
                     // Clear existing data
                     db.deleteAllMedicines();
                     db.deleteAllHistory();
@@ -302,7 +306,11 @@ public class SettingsActivity extends AppCompatActivity {
                             medObj.getString("frequency"),
                             true
                         );
-                        db.addMedicine(med);
+                        long id = db.addMedicine(med);
+                        med.setId((int) id);
+                        
+                        // Reschedule alarms for restored medicine
+                        alarmScheduler.scheduleMedicineAlarm(med);
                     }
                     
                     // Restore history
