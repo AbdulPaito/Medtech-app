@@ -84,17 +84,16 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center"
-                    android:weightSum="3">
+                    android:weightSum="2">
 
                     <!-- Male Avatar -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/card_male_avatar"
-                        android:layout_width="0dp"
-                        android:layout_height="75dp"
-                        android:layout_weight="1"
-                        android:layout_marginStart="4dp"
-                        android:layout_marginEnd="4dp"
-                        app:cardCornerRadius="37.5dp"
+                        android:layout_width="90dp"
+                        android:layout_height="90dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginEnd="8dp"
+                        app:cardCornerRadius="45dp"
                         app:cardElevation="6dp"
                         app:strokeWidth="3dp"
                         app:strokeColor="@android:color/transparent">
@@ -110,12 +109,11 @@
                     <!-- Female Avatar -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/card_female_avatar"
-                        android:layout_width="0dp"
-                        android:layout_height="75dp"
-                        android:layout_weight="1"
-                        android:layout_marginStart="4dp"
-                        android:layout_marginEnd="4dp"
-                        app:cardCornerRadius="37.5dp"
+                        android:layout_width="90dp"
+                        android:layout_height="90dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginEnd="8dp"
+                        app:cardCornerRadius="45dp"
                         app:cardElevation="6dp"
                         app:strokeWidth="3dp"
                         app:strokeColor="@android:color/transparent">
@@ -126,27 +124,6 @@
                             android:src="@drawable/ic_female"
                             android:padding="16dp"
                             android:background="#EC4899" />
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Custom Avatar -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/card_custom_avatar"
-                        android:layout_width="0dp"
-                        android:layout_height="75dp"
-                        android:layout_weight="1"
-                        android:layout_marginStart="4dp"
-                        android:layout_marginEnd="4dp"
-                        app:cardCornerRadius="37.5dp"
-                        app:cardElevation="6dp"
-                        app:strokeWidth="3dp"
-                        app:strokeColor="@android:color/transparent">
-
-                        <ImageView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:src="@drawable/ic_person"
-                            android:padding="16dp"
-                            android:background="#8B5CF6" />
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
             </LinearLayout>

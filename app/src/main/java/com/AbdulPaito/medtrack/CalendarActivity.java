@@ -1,11 +1,15 @@
 package com.AbdulPaito.medtrack;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.CalendarView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import com.AbdulPaito.medtrack.database.DatabaseHelper;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -13,8 +17,11 @@ import java.util.Locale;
 public class CalendarActivity extends AppCompatActivity {
 
     private CalendarView calendarView;
-    private TextView textSelectedDate, textDayInfo;
+    private TextView textSelectedDate, textDayInfo, textEmptyState;
+    private RecyclerView recyclerViewHistory;
+    private HistoryCalendarAdapter adapter;
     private DatabaseHelper dbHelper;
+    private List<HistoryItem> historyList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,7 +36,15 @@ public class CalendarActivity extends AppCompatActivity {
         calendarView = findViewById(R.id.calendarView);
         textSelectedDate = findViewById(R.id.textSelectedDate);
         textDayInfo = findViewById(R.id.textDayInfo);
+        textEmptyState = findViewById(R.id.textEmptyState);
+        recyclerViewHistory = findViewById(R.id.recyclerViewHistory);
         dbHelper = new DatabaseHelper(this);
+
+        // Setup RecyclerView
+        historyList = new ArrayList<>();
+        adapter = new HistoryCalendarAdapter(this, historyList);
+        recyclerViewHistory.setLayoutManager(new LinearLayoutManager(this));
+        recyclerViewHistory.setAdapter(adapter);
 
         // Show today's data initially
         showTodayData();
@@ -62,35 +77,38 @@ public class CalendarActivity extends AppCompatActivity {
         List<HistoryItem> dayHistory = dbHelper.getHistoryByDate(date);
         
         if (dayHistory.isEmpty()) {
-            textDayInfo.setText("📭 No medicines taken on this day");
+            // Show empty state
+            textDayInfo.setText("📭 No medicines recorded");
+            recyclerViewHistory.setVisibility(View.GONE);
+            textEmptyState.setVisibility(View.VISIBLE);
         } else {
-            StringBuilder info = new StringBuilder();
-            info.append("📊 Total: ").append(dayHistory.size()).append(" medicine(s)\n\n");
-            
+            // Show summary
             int taken = 0, missed = 0;
             for (HistoryItem item : dayHistory) {
                 if (item.getStatus().equals("Taken")) {
                     taken++;
-                    info.append("✅ ");
                 } else {
                     missed++;
-                    info.append("❌ ");
                 }
-                info.append(item.getMedicineName())
-                    .append(" - ").append(item.getTime())
-                    .append("\n");
             }
             
-            info.append("\n📈 Summary:\n");
-            info.append("✅ Taken: ").append(taken).append("\n");
-            info.append("❌ Missed: ").append(missed);
+            String summary = "📊 Total: " + dayHistory.size() + " medicine(s) • " +
+                           "✅ Taken: " + taken + " • ❌ Missed: " + missed;
+            textDayInfo.setText(summary);
             
-            textDayInfo.setText(info.toString());
+            // Update RecyclerView
+            historyList.clear();
+            historyList.addAll(dayHistory);
+            adapter.updateList(historyList);
+            
+            recyclerViewHistory.setVisibility(View.VISIBLE);
+            textEmptyState.setVisibility(View.GONE);
         }
     }
 
     private String formatDate(int day, int month, int year) {
-        return day + "/" + month + "/" + year;
+        // Format with leading zeros to match database format (dd/MM/yyyy)
+        return String.format(Locale.getDefault(), "%02d/%02d/%d", day, month, year);
     }
 
     @Override

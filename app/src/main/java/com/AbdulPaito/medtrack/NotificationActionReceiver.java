@@ -68,8 +68,8 @@ public class NotificationActionReceiver extends BroadcastReceiver {
     private void markAsTaken(Context context, int medicineId, String medicineName) {
         DatabaseHelper dbHelper = new DatabaseHelper(context);
 
-        // Get current time
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault());
+        // Get current time in 12-hour format
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("h:mm a", java.util.Locale.getDefault());
         String currentTime = sdf.format(new java.util.Date());
 
         // Add to history as "Taken"

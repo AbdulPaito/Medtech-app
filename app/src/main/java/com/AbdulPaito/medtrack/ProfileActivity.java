@@ -37,7 +37,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private ImageView imgProfile;
     private MaterialButton btnChangePicture, btnSaveProfile;
-    private MaterialCardView cardMaleAvatar, cardFemaleAvatar, cardCustomAvatar;
+    private MaterialCardView cardMaleAvatar, cardFemaleAvatar;
     private TextInputEditText editName, editAge;
     private RadioGroup radioGender;
     private RadioButton radioMale, radioFemale;
@@ -74,7 +74,6 @@ public class ProfileActivity extends AppCompatActivity {
         btnSaveProfile = findViewById(R.id.btn_save_profile);
         cardMaleAvatar = findViewById(R.id.card_male_avatar);
         cardFemaleAvatar = findViewById(R.id.card_female_avatar);
-        cardCustomAvatar = findViewById(R.id.card_custom_avatar);
         editName = findViewById(R.id.edit_name);
         editAge = findViewById(R.id.edit_age);
         radioGender = findViewById(R.id.radio_gender);
@@ -160,14 +159,6 @@ public class ProfileActivity extends AppCompatActivity {
             updateAvatarSelection();
         });
 
-        // Custom avatar
-        cardCustomAvatar.setOnClickListener(v -> {
-            selectedAvatarType = "custom";
-            imgProfile.setImageResource(R.drawable.ic_person);
-            profileImageBase64 = "";
-            updateAvatarSelection();
-        });
-
         // Save profile
         btnSaveProfile.setOnClickListener(v -> saveProfile());
     }
@@ -245,7 +236,6 @@ public class ProfileActivity extends AppCompatActivity {
         // Reset all borders
         cardMaleAvatar.setStrokeColor(getResources().getColor(android.R.color.transparent, null));
         cardFemaleAvatar.setStrokeColor(getResources().getColor(android.R.color.transparent, null));
-        cardCustomAvatar.setStrokeColor(getResources().getColor(android.R.color.transparent, null));
 
         // Highlight selected
         int selectedColor = getResources().getColor(R.color.primary, null);
@@ -255,9 +245,6 @@ public class ProfileActivity extends AppCompatActivity {
                 break;
             case "female":
                 cardFemaleAvatar.setStrokeColor(selectedColor);
-                break;
-            case "custom":
-                cardCustomAvatar.setStrokeColor(selectedColor);
                 break;
         }
     }

@@ -89,7 +89,10 @@ public class AlarmScheduler {
             scheduleMainAlarm(medicine, alarmTime);
             
             Log.d(TAG, "✅ All alarms scheduled successfully for: " + medicine.getMedicineName());
-            Toast.makeText(context, "✅ Alarm set for " + medicine.getReminderTime(), Toast.LENGTH_SHORT).show();
+            
+            // Convert time to 12-hour format for display
+            String displayTime = convertTo12Hour(medicine.getReminderTime());
+            Toast.makeText(context, "✅ Alarm set for " + displayTime, Toast.LENGTH_SHORT).show();
         } else {
             Log.e(TAG, "❌ AlarmManager is null!");
         }
@@ -256,6 +259,20 @@ public class AlarmScheduler {
             return alarmManager != null && alarmManager.canScheduleExactAlarms();
         }
         return true;
+    }
+
+    /**
+     * Convert 24-hour time format to 12-hour format with AM/PM
+     */
+    private String convertTo12Hour(String time24) {
+        try {
+            java.text.SimpleDateFormat inputFormat = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault());
+            java.text.SimpleDateFormat outputFormat = new java.text.SimpleDateFormat("h:mm a", java.util.Locale.getDefault());
+            java.util.Date date = inputFormat.parse(time24);
+            return outputFormat.format(date);
+        } catch (Exception e) {
+            return time24; // Return original if parsing fails
+        }
     }
 
     /**
